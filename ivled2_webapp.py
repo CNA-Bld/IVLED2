@@ -137,9 +137,10 @@ def dropbox_update_folder():
     file_list = dropbox_client.search('/', '.Your_Workbin_Files')
     if file_list:
         new_path = file_list[0]['path']
-        user.target_settings['folder'] = new_path
+        user.target_settings['folder'] = new_path[:new_path.rfind() + 1]
         user.update()
-        return new_path
+        dropbox_client.file_delete(new_path)
+        return user.target_settings['folder']
     else:
         return "[Unknown Error, Please Retry]"  # TODO
 

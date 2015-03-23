@@ -13,7 +13,7 @@
     <script src="/static/js/jquery.form.js"></script>
 
     {% if target == 'dropbox' %}
-    <script type="text/javascript" src="https://www.dropbox.com/static/api/2/dropins.js" id="dropboxjs" data-app-key="uu5mhej80smc1vp"></script>
+        <script type="text/javascript" src="https://www.dropbox.com/static/api/2/dropins.js" id="dropboxjs" data-app-key="uu5mhej80smc1vp"></script>
     {% endif %}
 
     <script>
@@ -57,7 +57,7 @@
                         });
                         $.get("{{ url_for('dropbox_update_folder') }}", function (data, status) {
                             $("#textFolder").val(data);
-                            $.bootstrapGrowl("Folder updated to " + data, {
+                            $.bootstrapGrowl("We found it! Your folder is now updated to " + data, {
                                 type: 'info'
                             });
                         })
@@ -108,6 +108,9 @@
         <div class="panel-body">
             {% if target == 'dropbox' %}
                 <div class="input-group">
+                <span class="input-group-btn">
+                        <button class="btn btn-social-icon btn-dropbox"><i class="fa fa-dropbox"></i></button>
+                </span>
                     <input type="text" class="form-control" id="textFolder"
                            value="{{ target_settings.target_folder or 'Unknown / Not Set' }}" disabled>
                 <span class="input-group-btn">

@@ -189,4 +189,4 @@ def logout():
 app.secret_key = config.FLASK_SECRET_KEY
 
 if __name__ == '__main__':
-    app.run(debug=config.DEBUG)
+    app.run(port=8000, debug=config.DEBUG)

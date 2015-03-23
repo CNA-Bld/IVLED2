@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>IVLE Syncer Reinvented</title>
+    <title>NUSync</title>
 
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
@@ -46,13 +46,14 @@
                 <span class="icon-bar"></span>
                 <span class="icon-bar"></span>
             </button>
-            <a class="navbar-brand" href="#">IVLE Syncer Reinvented</a>
+            <a class="navbar-brand" href="#">NUSync</a>
         </div>
         <div class="collapse navbar-collapse">
             <ul class="nav navbar-nav">
                 <li class="active"><a href="#">Dashboard</a></li>
             </ul>
             <ul class="nav navbar-nav navbar-right">
+                <li><a href="{{ url_for('logout') }}">Logout</a></li>
                 <li><a href="http://www.sshz.org/">SSHZ.ORG</a></li>
             </ul>
         </div>

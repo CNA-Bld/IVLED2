@@ -34,25 +34,29 @@
 
         var modulesCallback = function () {
             $.get("{{ url_for('modules_get') }}", function (data, status) {
-                        $("#textModules").val(data);
-                        $.bootstrapGrowl("Modules updated to " + data, {
-                            type: 'info'
-                        });
-                    }
-            );
+                $("#textModules").val(data);
+                $.bootstrapGrowl("Modules updated to " + data, {
+                    type: 'info'
+                });
+            });
         };
 
-        {% if dropbox_auth %}
+        {% if target == 'dropbox' %}
             $('#modifyFolder').on('click', function () {
                 var options = {
                     files: [
-                        {'url': '{{ url_for('internal_folder', _external=True) }}?user_id={{ user_id }}', 'filename': '.Your_Workbin_Files'}
+                        {'url': '{{ url_for('dropbox_folder', _external=True) }}?user_id={{ user_id }}', 'filename': '.Your_Workbin_Files'}
                     ],
                     success: function () {
                         $.bootstrapGrowl("File saved successfully. We are looking for it, please wait...", {
                             type: 'info'
                         });
-                        // TODO
+                        $.get("{{ url_for('dropbox_update_folder') }}", function (data, status) {
+                            $("#textFolder").val(data);
+                            $.bootstrapGrowl("Folder updated to " + data, {
+                                type: 'info'
+                            });
+                        })
                     },
                     cancel: function () {
                         $.bootstrapGrowl("Your folder is not changed.", {

@@ -94,7 +94,7 @@ def auth_dropbox_callback():
         flash('Not approved?', 'warning')
         return redirect(url_for('dashboard'))
     except dropbox.client.DropboxOAuth2Flow.ProviderException as e:
-        app.logger.exception("Auth error" + e)
+        app.logger.exception("Auth error" + str(e))
         abort(403)
     user.target = 'dropbox'
     user.target_settings = {'token': access_token, 'folder': ''}
@@ -116,12 +116,32 @@ def auth_dropbox_unauth():
 
 
 @app.route("/internal/dropbox/folder/")
-def internal_folder():
+def dropbox_folder():
     user = models.User(request.args.get('user_id', ''))
-    dropbox_client = dropbox.client.DropboxClient(user.dropbox_token)
-    file_list = dropbox_client.search('/', '.Your_Workbin_Files')
-
+    dropbox_client = dropbox.client.DropboxClient(user.target_settings['token'])
+    try:
+        file_list = dropbox_client.search('/', '.Your_Workbin_Files')
+        for file in file_list:
+            dropbox_client.file_delete(file['path'])
+    except:
+        pass  # TODO
     return ""
+
+
+@app.route("/internal/dropbox/update_folder/")
+def dropbox_update_folder():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    user = models.User(session['user_id'])
+    dropbox_client = dropbox.client.DropboxClient(user.target_settings['token'])
+    file_list = dropbox_client.search('/', '.Your_Workbin_Files')
+    if file_list:
+        new_path = file_list[0]['path']
+        user.target_settings['folder'] = new_path
+        user.update()
+        return new_path
+    else:
+        return "[Unknown Error, Please Retry]"  # TODO
 
 
 # End of Dropbox
@@ -131,12 +151,16 @@ def internal_folder():
 @app.route("/auth/google/")
 def auth_google():
     pass
+
+
 # End of Google Drive
 
 # Target: OneDrive
 @app.route("/auth/onedrive/")
 def auth_onedrive():
     pass
+
+
 # End of OneDrive
 
 

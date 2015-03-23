@@ -18,7 +18,7 @@ def get_modules_list(user):
     request = requests.get('https://ivle.nus.edu.sg/api/Lapi.svc/Modules_Student?APIKey=%s&AuthToken=%s&Duration=0&IncludeAllInfo=false' % (
                                 IVLE_APIKEY, user.ivle_token))
     if request.json()['Comments'] == 'Invalid login!':
-        raise Exception  # TODO
+        raise Exception()  # TODO
     modules_list = []
     for module in request.json()['Results']:
         modules_list.append({x: module[x] for x in ['CourseCode', 'ID']})

@@ -62,7 +62,7 @@ def modules_get():
 # Target: Dropbox
 
 def get_dropbox_auth_flow():
-    redirect_uri = url_for('auth_dropbox_callback', _external=True)
+    redirect_uri = url_for('auth_dropbox_callback', _external=True, _scheme='https')
     return dropbox.client.DropboxOAuth2Flow(config.DROPBOX_APPKEY, config.DROPBOX_APPSECRET, redirect_uri,
                                             session, 'dropbox-auth-csrf-token')
 

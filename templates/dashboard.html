@@ -10,7 +10,11 @@
 {% block additional_js %}
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-modal/2.2.5/js/bootstrap-modal.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-modal/2.2.5/js/bootstrap-modalmanager.min.js"></script>
-    <script src="http://malsup.github.io/jquery.form.js"></script>
+    <script src="/static/js/jquery.form.js"></script>
+    
+    {% if target == 'dropbox' %}
+    <script type="text/javascript" src="https://www.dropbox.com/static/api/2/dropins.js" id="dropboxjs" data-app-key="uu5mhej80smc1vp"></script>
+    {% endif %}
 
     <script>
 

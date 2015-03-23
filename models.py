@@ -9,20 +9,15 @@ class User():
         else:
             self.email = user_email
             self.ivle_token = ''
-            self.dropbox_token = ''
             self.modules = []
-            self.folder = ''
             self.enabled = False
             self.uploadable_folder = False
-            self.completed_wizard = False
+            self.target = None
+            self.target_settings = {}
             self.update()
 
     def update_ivle_token(self, new_token):
         self.ivle_token = new_token
-        self.update()
-
-    def update_dropbox_token(self, new_token):
-        self.dropbox_token = new_token
         self.update()
 
     def to_dict(self):
@@ -30,4 +25,3 @@ class User():
 
     def update(self):
         db.update_user(self)
-

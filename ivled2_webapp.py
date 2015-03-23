@@ -21,8 +21,7 @@ def dashboard():
         return redirect(url_for('login'))
     user = models.User(session['user_id'])
     selected_modules = ', '.join(sorted([course['Code'] for course in user.modules])) or 'None'
-    return render_template('dashboard.html', selected_modules=selected_modules, dropbox_auth=bool(user.dropbox_token),
-                           target_folder=user.folder or '(Unknown / Not set)', internal_folder_path=url_for('internal_folder', _external=True),
+    return render_template('dashboard.html', selected_modules=selected_modules, target=user.target, target_settings=user.target_settings,
                            DROPBOX_APPKEY=config.DROPBOX_APPKEY, user_id=user.user_id)
     # return 'Logged in as %s' % session['user_id']
 
@@ -60,10 +59,12 @@ def modules_get():
     return selected_modules
 
 
+# Target: Dropbox
+
 def get_dropbox_auth_flow():
     redirect_uri = url_for('auth_dropbox_callback', _external=True)
     return dropbox.client.DropboxOAuth2Flow(config.DROPBOX_APPKEY, config.DROPBOX_APPSECRET, redirect_uri,
-                                       session, 'dropbox-auth-csrf-token')
+                                            session, 'dropbox-auth-csrf-token')
 
 
 @app.route("/auth/dropbox/")
@@ -95,8 +96,10 @@ def auth_dropbox_callback():
     except dropbox.client.DropboxOAuth2Flow.ProviderException as e:
         app.logger.exception("Auth error" + e)
         abort(403)
-    user.update_dropbox_token(access_token)
-    flash('Successfully logged in to Dropbox as %s' % dropbox.client.DropboxClient(user.dropbox_token).account_info()['display_name'], 'info')
+    user.target = 'dropbox'
+    user.target_settings = {'token': access_token, 'folder': ''}
+    user.update()
+    flash('Successfully logged in to Dropbox as %s' % dropbox.client.DropboxClient(user.target_settings['token']).account_info()['display_name'], 'info')
     return redirect(url_for('dashboard'))
 
 
@@ -105,18 +108,36 @@ def auth_dropbox_unauth():
     if 'user_id' not in session:
         return redirect(url_for('login'))
     user = models.User(session['user_id'])
-    user.update_dropbox_token('')
+    user.target = None
+    user.target_settings = {}
+    user.update()
     flash('Successfully logged out from Dropbox.', 'warning')
     return redirect(url_for('dashboard'))
 
 
-@app.route("/internal/folder/")
+@app.route("/internal/dropbox/folder/")
 def internal_folder():
     user = models.User(request.args.get('user_id', ''))
     dropbox_client = dropbox.client.DropboxClient(user.dropbox_token)
     file_list = dropbox_client.search('/', '.Your_Workbin_Files')
 
     return ""
+
+
+# End of Dropbox
+
+
+# Target: Google Drive
+@app.route("/auth/google/")
+def auth_google():
+    pass
+# End of Google Drive
+
+# Target: OneDrive
+@app.route("/auth/onedrive/")
+def auth_onedrive():
+    pass
+# End of OneDrive
 
 
 @app.route("/login/")

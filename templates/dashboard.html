@@ -4,6 +4,7 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-modal/2.2.5/css/bootstrap-modal-bs3patch.css"
           rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-modal/2.2.5/css/bootstrap-modal.css" rel="stylesheet">
+    <link href="/static/css/bootstrap-social.css" rel="stylesheet">
 {% endblock %}
 
 {% block additional_js %}
@@ -45,7 +46,7 @@
             $('#modifyFolder').on('click', function () {
                 var options = {
                     files: [
-                        {'url': '{{ internal_folder_path }}?user_id={{ user_id }}', 'filename': '.Your_Workbin_Files'}
+                        {'url': '{{ url_for('internal_folder', _external=True) }}?user_id={{ user_id }}', 'filename': '.Your_Workbin_Files'}
                     ],
                     success: function () {
                         $.bootstrapGrowl("File saved successfully. We are looking for it, please wait...", {
@@ -94,24 +95,32 @@
 
     <div class="panel panel-default">
         <div class="panel-heading">
-            Target Folder
+            Target Settings
         </div>
         <div class="panel-body">
-            <div class="input-group">
-                <input type="text" class="form-control" id="textFolder"
-                       value="{% if dropbox_auth %}{{ target_folder }}{% else %}(Please login with Dropbox first){% endif %}" disabled>
+            {% if target == 'dropbox' %}
+                <div class="input-group">
+                    <input type="text" class="form-control" id="textFolder"
+                           value="{{ target_settings.target_folder or 'Unknown / Not Set' }}" disabled>
                 <span class="input-group-btn">
-                    {% if dropbox_auth %}
                         <a class="btn btn-default" href="{{ url_for('auth_dropbox_unauth') }}" role="button"
                            id="unauthorizeDropbox">Logout</a>
                         <button class="btn btn-default" type="button" id="modifyFolder">Set Folder</button>
-                    {% else %}
-                        <a class="btn btn-default" href="{{ url_for('auth_dropbox') }}" role="button"
-                           id="authorizeDropbox">Login</a>
-                        <button class="btn btn-default" type="button" id="modifyFolder" disabled>Set Folder</button>
-                    {% endif %}
                 </span>
-            </div>
+                </div>
+            {% elif target == 'onedrive' %}
+                Nothing here.
+            {% else %}
+                <a class="btn btn-social btn-dropbox" href="{{ url_for('auth_dropbox') }}">
+                    <i class="fa fa-dropbox"></i> Dropbox
+                </a>
+                <a class="btn btn-social btn-google-plus" href="{{ url_for('auth_google') }}">
+                    <i class="fa fa-google-plus"></i> Google Drive (Not implemented)
+                </a>
+                <a class="btn btn-social btn-microsoft" href="{{ url_for('auth_onedrive') }}">
+                    <i class="fa fa-windows"></i> OneDrive (Not implemented)
+                </a>
+            {% endif %}
         </div>
     </div>
 
@@ -124,8 +133,7 @@
             <div class="input-group">
                 <input type="text" class="form-control" placeholder="TEST" disabled>
                 <span class="input-group-btn">
-                    <button class="btn btn-default" type="button" id="authorizeDropbox">Authorize</button>
-                    <button class="btn btn-default" type="button" id="modifyFolder">Modify</button>
+                    <button class="btn btn-default" type="button" id="temp">Temp</button>
                 </span>
             </div>
         </div>

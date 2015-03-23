@@ -4,12 +4,14 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-modal/2.2.5/css/bootstrap-modal-bs3patch.css"
           rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-modal/2.2.5/css/bootstrap-modal.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-switch/3.3.2/css/bootstrap3/bootstrap-switch.min.css" rel="stylesheet">
     <link href="/static/css/bootstrap-social.css" rel="stylesheet">
 {% endblock %}
 
 {% block additional_js %}
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-modal/2.2.5/js/bootstrap-modal.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-modal/2.2.5/js/bootstrap-modalmanager.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-switch/3.3.2/js/bootstrap-switch.min.js"></script>
     <script src="/static/js/jquery.form.js"></script>
 
     {% if target == 'dropbox' %}
@@ -141,12 +143,7 @@
             Settings
         </div>
         <div class="panel-body">
-            <div class="input-group">
-                <input type="text" class="form-control" placeholder="TEST" disabled>
-                <span class="input-group-btn">
-                    <button class="btn btn-default" type="button" id="temp">Temp</button>
-                </span>
-            </div>
+
         </div>
     </div>
 

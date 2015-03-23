@@ -6,11 +6,11 @@
         </div>
         <div class="modal-body">
             {% for module in modules %}
-                <div class="checkbox">
-                    <label class="checkbox-custom">
-                        <input class="sr-only" type="checkbox" name="{{ module.CourseCode }}|{{ module.ID }}"
-                               {% if module.CourseCode in selected_modules %}checked="checked"{% endif %} value="">
-                        <span class="checkbox-label">{{ module.CourseCode }}</span>
+                <div>
+                    <label>
+                        <input type="checkbox" class="module-checkbox" name="{{ module.CourseCode }}|{{ module.ID }}"
+                               {% if module.CourseCode in selected_modules %}checked="checked"{% endif %} data-size="small">
+                        {{ module.CourseCode }}
                     </label>
                 </div>
             {% endfor %}
@@ -24,7 +24,7 @@
 
 <script>
     $(function () {
-        $('.checkbox').checkbox();
+        $(".module-checkbox").bootstrapSwitch();
     });
     $('#moduleForm').ajaxForm(function () {
         $('#ajaxModal').modal('hide');

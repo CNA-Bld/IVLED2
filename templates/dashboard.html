@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+
+{% block additional_css %}
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-modal/2.2.5/css/bootstrap-modal-bs3patch.css"
+          rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-modal/2.2.5/css/bootstrap-modal.css" rel="stylesheet">
+{% endblock %}
+
+{% block additional_js %}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-modal/2.2.5/js/bootstrap-modal.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-modal/2.2.5/js/bootstrap-modalmanager.min.js"></script>
+    <script src="http://malsup.github.io/jquery.form.js"></script>
+
+    <script>
+
+        $.fn.modal.defaults.spinner = $.fn.modalmanager.defaults.spinner =
+                '<div class="loading-spinner" style="width: 200px; margin-left: -100px;">' +
+                '<div class="progress progress-striped active">' +
+                '<div class="progress-bar" style="width: 100%;"></div>' +
+                '</div>' +
+                '</div>';
+        $.fn.modalmanager.defaults.resize = true;
+
+        var $modal = $('#ajaxModal');
+
+        $('#modifyModules').on('click', function () {
+            $('body').modalmanager('loading');
+
+            $modal.load('{{ url_for('modules') }}', '', function () {
+                $modal.modal();
+            });
+        });
+
+        var modulesCallback = function () {
+            $.get("{{ url_for('modules_get') }}", function (data, status) {
+                        $("#textModules").val(data);
+                        $.bootstrapGrowl("Modules updated to " + data, {
+                            type: 'info'
+                        });
+                    }
+            );
+        };
+
+        {% if dropbox_auth %}
+            $('#modifyFolder').on('click', function () {
+                var options = {
+                    files: [
+                        {'url': '{{ internal_folder_path }}?user_id={{ user_id }}', 'filename': '.Your_Workbin_Files'}
+                    ],
+                    success: function () {
+                        $.bootstrapGrowl("File saved successfully. We are looking for it, please wait...", {
+                            type: 'info'
+                        });
+                        // TODO
+                    },
+                    cancel: function () {
+                        $.bootstrapGrowl("Your folder is not changed.", {
+                            type: 'info'
+                        });
+                    },
+                    error: function (errorMessage) {
+                        $.bootstrapGrowl("Something went wrong. Dropbox says ".concat(errorMessage), {
+                            type: 'danger'
+                        });
+                    }
+                };
+                Dropbox.save(options);
+            });
+        {% endif %}
+    </script>
+
+    {% if dropbox_auth %}
+        <script type="text/javascript" src="https://www.dropbox.com/static/api/1/dropins.js" id="dropboxjs"
+                data-app-key="{{ DROPBOX_APPKEY }}"></script>
+    {% endif %}
+{% endblock %}
+
+{% block main_body %}
+
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            Modules to Sync
+        </div>
+        <div class="panel-body">
+            <div class="input-group">
+                <input type="text" class="form-control" id="textModules" value="{{ selected_modules }}" disabled>
+                <span class="input-group-btn">
+                    <button class="btn btn-default" type="button" id="modifyModules">Modify</button>
+                </span>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            Target Folder
+        </div>
+        <div class="panel-body">
+            <div class="input-group">
+                <input type="text" class="form-control" id="textFolder"
+                       value="{% if dropbox_auth %}{{ target_folder }}{% else %}(Please login with Dropbox first){% endif %}" disabled>
+                <span class="input-group-btn">
+                    {% if dropbox_auth %}
+                        <a class="btn btn-default" href="{{ url_for('auth_dropbox_unauth') }}" role="button"
+                           id="unauthorizeDropbox">Logout</a>
+                        <button class="btn btn-default" type="button" id="modifyFolder">Set Folder</button>
+                    {% else %}
+                        <a class="btn btn-default" href="{{ url_for('auth_dropbox') }}" role="button"
+                           id="authorizeDropbox">Login</a>
+                        <button class="btn btn-default" type="button" id="modifyFolder" disabled>Set Folder</button>
+                    {% endif %}
+                </span>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            Settings
+        </div>
+        <div class="panel-body">
+            <div class="input-group">
+                <input type="text" class="form-control" placeholder="TEST" disabled>
+                <span class="input-group-btn">
+                    <button class="btn btn-default" type="button" id="authorizeDropbox">Authorize</button>
+                    <button class="btn btn-default" type="button" id="modifyFolder">Modify</button>
+                </span>
+            </div>
+        </div>
+    </div>
+
+
+    <div id="ajaxModal" class="modal fade" tabindex="-1" role="dialog" style="display: none;"></div>
+
+{% endblock %}

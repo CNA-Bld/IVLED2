@@ -1,0 +1,33 @@
+<form role="form" method="POST" action="{{ url_for('modules_submit') }}" id="moduleForm">
+    <div class="modal-content">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+            <h4>Select Modules</h4>
+        </div>
+        <div class="modal-body">
+            {% for module in modules %}
+                <div class="checkbox">
+                    <label class="checkbox-custom">
+                        <input class="sr-only" type="checkbox" name="{{ module.CourseCode }}|{{ module.ID }}"
+                               {% if module.CourseCode in selected_modules %}checked="checked"{% endif %} value="">
+                        <span class="checkbox-label">{{ module.CourseCode }}</span>
+                    </label>
+                </div>
+            {% endfor %}
+        </div>
+        <div class="modal-footer">
+            <button type="button" data-dismiss="modal" class="btn btn-default">Close</button>
+            <button type="submit" class="btn btn-primary">Submit</button>
+        </div>
+    </div>
+</form>
+
+<script>
+    $(function () {
+        $('.checkbox').checkbox();
+    });
+    $('#moduleForm').ajaxForm(function () {
+        $('#ajaxModal').modal('hide');
+        modulesCallback();
+    });
+</script>

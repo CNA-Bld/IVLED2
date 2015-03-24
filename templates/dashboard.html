@@ -49,12 +49,13 @@
 
         {% if target == 'dropbox' %}
             $('#modifyFolder').on('click', function () {
+                var notificationDisplayed = false;
                 var options = {
                     files: [
                         {'url': '{{ url_for('dropbox_folder', _external=True) }}?user_id={{ user_id }}&key={{ key }}', 'filename': '.Your_Workbin_Files'}
                     ],
                     success: function () {
-                        $.bootstrapGrowl("File saved successfully. We are looking for it, please wait...", {
+                        $.bootstrapGrowl("File saved successfully. We are looking for it, one second please...", {
                             type: 'info'
                         });
                         $.get("{{ url_for('dropbox_update_folder') }}", function (data, status) {
@@ -63,6 +64,14 @@
                                 type: 'info'
                             });
                         })
+                    },
+                    progress: function (progress) {
+                        if (!notificationDisplayed) {
+                            $.bootstrapGrowl("Communicating with Dropbox...", {
+                                type: 'info'
+                            });
+                            notificationDisplayed = true;
+                        }
                     },
                     cancel: function () {
                         $.bootstrapGrowl("Your folder is not changed.", {

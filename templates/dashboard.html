@@ -123,7 +123,7 @@
                         <span class="btn btn-social-icon btn-dropbox"><i class="fa fa-dropbox"></i></span>
                 </span>
                     <input type="text" class="form-control" id="textFolder"
-                           value="{{ target_settings.target_folder or 'Unknown / Not Set' }}" disabled>
+                           value="{{ target_settings.folder or 'Unknown / Not Set' }}" disabled>
                 <span class="input-group-btn">
                         <a class="btn btn-default" href="{{ url_for('auth_dropbox_unauth') }}" role="button"
                            id="unauthorizeDropbox">Logout</a>

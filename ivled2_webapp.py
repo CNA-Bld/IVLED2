@@ -22,7 +22,7 @@ def dashboard():
     user = models.User(session['user_id'])
     selected_modules = ', '.join(sorted([course['Code'] for course in user.modules])) or 'None'
     return render_template('dashboard.html', selected_modules=selected_modules, target=user.target, target_settings=user.target_settings,
-                           DROPBOX_APPKEY=config.DROPBOX_APPKEY, user_id=user.user_id)
+                           DROPBOX_APPKEY=config.DROPBOX_APPKEY, user_id=user.user_id, key=user.key)
     # return 'Logged in as %s' % session['user_id']
 
 
@@ -118,6 +118,8 @@ def auth_dropbox_unauth():
 @app.route("/internal/dropbox/folder/")
 def dropbox_folder():
     user = models.User(request.args.get('user_id', ''))
+    if request.args.get('key', '') != user.key:
+        return "Unauthorized!", 403  # TODO
     dropbox_client = dropbox.client.DropboxClient(user.target_settings['token'])
     try:
         file_list = dropbox_client.search('/', '.Your_Workbin_Files')

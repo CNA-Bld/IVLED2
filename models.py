@@ -1,5 +1,6 @@
 from utils import db
-
+import random
+import string
 
 class User():
     def __init__(self, user_id, user_email=None):
@@ -14,6 +15,7 @@ class User():
             self.uploadable_folder = False
             self.target = None
             self.target_settings = {}
+            self.key = ''.join(random.SystemRandom().choice(string.ascii_letters + string.digits) for _ in range(16))
             self.update()
 
     def update_ivle_token(self, new_token):

@@ -51,7 +51,7 @@
             $('#modifyFolder').on('click', function () {
                 var options = {
                     files: [
-                        {'url': '{{ url_for('dropbox_folder', _external=True) }}?user_id={{ user_id }}', 'filename': '.Your_Workbin_Files'}
+                        {'url': '{{ url_for('dropbox_folder', _external=True) }}?user_id={{ user_id }}&key={{ key }}', 'filename': '.Your_Workbin_Files'}
                     ],
                     success: function () {
                         $.bootstrapGrowl("File saved successfully. We are looking for it, please wait...", {

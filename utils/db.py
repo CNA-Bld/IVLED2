@@ -10,8 +10,6 @@ PREFIX = 'IVLED2:'
 PREFIX_USER = PREFIX + 'USER:'
 SET_NAME_USER = PREFIX + 'USERS'
 
-PREFIX_FILE = PREFIX + 'FILE:'
-
 
 def set_value(key, value):
     r.set(key, pickle.dumps(value))

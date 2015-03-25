@@ -108,10 +108,14 @@ def auth_dropbox_callback():
     except dropbox.client.DropboxOAuth2Flow.ProviderException as e:
         app.logger.exception("Auth error" + str(e))
         abort(403)
-    user.target = 'dropbox'
-    user.target_settings = {'token': access_token, 'folder': ''}
+    if user.target != 'dropbox':
+        user.target = 'dropbox'
+        user.target_settings = {'token': access_token, 'folder': '', 'files_revision': []}
+        flash('Successfully logged in to Dropbox as %s' % dropbox.client.DropboxClient(user.target_settings['token']).account_info()['display_name'], 'info')
+    else:
+        user.target_settings['token'] = access_token
+        flash('Successfully refreshed token for Dropbox user %s' % dropbox.client.DropboxClient(user.target_settings['token']).account_info()['display_name'], 'info')
     user.update()
-    flash('Successfully logged in to Dropbox as %s' % dropbox.client.DropboxClient(user.target_settings['token']).account_info()['display_name'], 'info')
     return redirect(url_for('dashboard'))
 
 

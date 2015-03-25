@@ -2,8 +2,8 @@ import models
 from utils import db
 from utils import mail
 import rq
-import requests
 from config import *
+from drivers import drivers
 import api.ivle
 
 user_queue = rq.Queue('user', connection=db.r)
@@ -20,6 +20,10 @@ def queue_all_user():
 
 def do_user(user_name):
     user = models.User(user_name)
+    if not drivers[user.target].check_settings(user.target_settings):
+        user.enabled = False
+        user.update()
+        return  # TODO
     file_list = api.ivle.read_all_file_list(user)
     for file in file_list:
         if file['ID'] not in user.synced_files and not file_queue.fetch_job('%s:%s' % (user_name, file['ID'])):

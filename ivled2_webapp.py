@@ -22,7 +22,8 @@ def dashboard():
     user = models.User(session['user_id'])
     selected_modules = ', '.join(sorted([course['Code'] for course in user.modules])) or 'None'
     return render_template('dashboard.html', selected_modules=selected_modules, target=user.target, target_settings=user.target_settings,
-                           DROPBOX_APPKEY=config.DROPBOX_APPKEY, user_id=user.user_id, key=user.key)
+                           DROPBOX_APPKEY=config.DROPBOX_APPKEY, user_id=user.user_id, key=user.key, sync_enabled=user.enabled,
+                           uploadable_folder=user.uploadable_folder)
     # return 'Logged in as %s' % session['user_id']
 
 
@@ -57,6 +58,17 @@ def modules_get():
     user = models.User(session['user_id'])
     selected_modules = ', '.join(sorted([course['Code'] for course in user.modules])) or 'None'
     return selected_modules
+
+
+@app.route("/settings/submit/", methods=['POST'])
+def settings_submit():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    user = models.User(session['user_id'])
+    user.enabled = bool(request.form.get('sync_enabled', ''))
+    user.uploadable_folder = bool(request.form.get('uploadable_folder', ''))
+    user.update()
+    return ''
 
 
 # Target: Dropbox

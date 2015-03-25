@@ -47,6 +47,13 @@
             });
         };
 
+
+        $('#settingsForm').ajaxForm(function () {
+            $.bootstrapGrowl("Settings Saved!", {
+                type: 'info'
+            });
+        });
+
         {% if target == 'dropbox' %}
             $('#modifyFolder').on('click', function () {
                 var notificationDisplayed = false;
@@ -87,6 +94,8 @@
                 Dropbox.save(options);
             });
         {% endif %}
+
+
     </script>
 
     {% if dropbox_auth %}
@@ -152,7 +161,19 @@
             Settings
         </div>
         <div class="panel-body">
-
+            <form role="form" method="POST" action="{{ url_for('settings_submit') }}" id="settingsForm">
+                <div class="checkbox">
+                    <label>
+                        <input type="checkbox" name="sync_enabled" {% if sync_enabled %}checked="checked"{% endif %}> Enable Syncing
+                    </label>
+                </div>
+                <div class="checkbox">
+                    <label>
+                        <input type="checkbox" name="uploadable_folder" {% if uploadable_folder %}checked="checked"{% endif %}> Allow Syncing of Uploadable Folder
+                    </label>
+                </div>
+                <button type="submit" class="btn btn-block btn-primary">Save</button>
+            </form>
         </div>
     </div>
 

@@ -17,7 +17,7 @@ def index():
 
 @app.route("/dashboard/")
 def dashboard():
-    if 'user_id' not in session:
+    if 'user_id' not in session or session['user_id'] == '':
         return redirect(url_for('login'))
     user = models.User(session['user_id'])
     selected_modules = ', '.join(sorted([course['Code'] for course in user.modules])) or 'None'
@@ -29,7 +29,7 @@ def dashboard():
 
 @app.route("/modules/")
 def modules():
-    if 'user_id' not in session:
+    if 'user_id' not in session or session['user_id'] == '':
         return redirect(url_for('login'))
     user = models.User(session['user_id'])
     mods = ivle.get_modules_list(user)
@@ -39,7 +39,7 @@ def modules():
 
 @app.route("/modules/submit/", methods=['POST'])
 def modules_submit():
-    if 'user_id' not in session:
+    if 'user_id' not in session or session['user_id'] == '':
         return redirect(url_for('login'))
     user = models.User(session['user_id'])
     courses = []
@@ -53,7 +53,7 @@ def modules_submit():
 
 @app.route("/modules/get/")
 def modules_get():
-    if 'user_id' not in session:
+    if 'user_id' not in session or session['user_id'] == '':
         return redirect(url_for('login'))
     user = models.User(session['user_id'])
     selected_modules = ', '.join(sorted([course['Code'] for course in user.modules])) or 'None'
@@ -62,7 +62,7 @@ def modules_get():
 
 @app.route("/settings/submit/", methods=['POST'])
 def settings_submit():
-    if 'user_id' not in session:
+    if 'user_id' not in session or session['user_id'] == '':
         return redirect(url_for('login'))
     user = models.User(session['user_id'])
     user.enabled = bool(request.form.get('sync_enabled', ''))
@@ -81,7 +81,7 @@ def get_dropbox_auth_flow():
 
 @app.route("/auth/dropbox/")
 def auth_dropbox():
-    if 'user_id' not in session:
+    if 'user_id' not in session or session['user_id'] == '':
         return redirect(url_for('login'))
     user = models.User(session['user_id'])
     redirect_uri = get_dropbox_auth_flow().start()
@@ -91,7 +91,7 @@ def auth_dropbox():
 
 @app.route("/auth/dropbox/callback/")
 def auth_dropbox_callback():
-    if 'user_id' not in session:
+    if 'user_id' not in session or session['user_id'] == '':
         return redirect(url_for('login'))
     user = models.User(session['user_id'])
     try:
@@ -117,7 +117,7 @@ def auth_dropbox_callback():
 
 @app.route("/auth/dropbox/logout/")
 def auth_dropbox_unauth():
-    if 'user_id' not in session:
+    if 'user_id' not in session or session['user_id'] == '':
         return redirect(url_for('login'))
     user = models.User(session['user_id'])
     user.target = None
@@ -144,7 +144,7 @@ def dropbox_folder():
 
 @app.route("/internal/dropbox/update_folder/")
 def dropbox_update_folder():
-    if 'user_id' not in session:
+    if 'user_id' not in session or session['user_id'] == '':
         return redirect(url_for('login'))
     user = models.User(session['user_id'])
     dropbox_client = dropbox.client.DropboxClient(user.target_settings['token'])

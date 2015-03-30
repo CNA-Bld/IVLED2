@@ -51,12 +51,12 @@
         $('#settingsForm').ajaxForm({
             dataType: 'json',
             success: function (data) {
-                if (data)
+                if (data.result)
                     $.bootstrapGrowl("Settings Saved!", {
                         type: 'info'
                     });
                 else
-                    $.bootstrapGrowl("Something went wrong, please check your target settings.", {
+                    $.bootstrapGrowl(data.message, {
                         type: 'warning'
                     });
             }

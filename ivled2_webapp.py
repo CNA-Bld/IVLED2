@@ -1,12 +1,13 @@
 import config
 
 from flask import Flask, render_template, redirect, session, request, url_for, get_flashed_messages, flash, abort
+import json
 
 from api import ivle
 import dropbox
 
 import models
-from drivers import drivers
+import drivers
 
 app = Flask(__name__)
 
@@ -66,15 +67,19 @@ def settings_submit():
     if 'user_id' not in session or session['user_id'] == '':
         return redirect(url_for('login'))
     user = models.User(session['user_id'])
-    if user.target and drivers[user.target].check_settings(user.target_settings):
-        user.enabled = bool(request.form.get('sync_enabled', ''))
-        user.uploadable_folder = bool(request.form.get('uploadable_folder', ''))
-        user.update()
-        return 'true'
-    else:
-        user.enabled = False
-        user.update()
-        return 'false'
+    try:
+        if drivers.drivers[user.target].check_settings(user.target_settings):
+            user.enabled = bool(request.form.get('sync_enabled', ''))
+            user.uploadable_folder = bool(request.form.get('uploadable_folder', ''))
+            user.update()
+            return json.dumps({'result': True})
+        else:  # TODO: Should never reach
+            user.enabled = False
+            user.update()
+            return 'false'
+    except drivers.SyncException as e:
+        return json.dumps({'result': False, 'message': e.message})
+
 
 
 # Target: Dropbox

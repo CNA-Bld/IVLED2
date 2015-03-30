@@ -31,12 +31,14 @@ def do_user(user_name):
         if e.send_email:
             pass  # TODO: Handler not ready yet.
         return
+    except Exception as e:
+        return  # TODO: Inform admin
 
     try:
         if not api.ivle.validate_token(user):
             pass  # TODO: Handler not ready yet, should send email
     except Exception as e:
-        pass  # TODO
+        return  # TODO
 
     try:
         file_list = api.ivle.read_all_file_list(user)
@@ -63,6 +65,8 @@ def do_file(user_name, file_id, file_path):
         if e.send_email:
             pass  # TODO: Handler not ready yet.
         return
+    except Exception as e:
+        pass  # TODO: Inform admin
 
     try:
         drivers[user.target].transport_file(user.target_settings, url, file_path)
@@ -81,5 +85,7 @@ def do_file(user_name, file_id, file_path):
         # file_queue.enqueue_call(func=do_file, args=(user_name, file_id, file_path), job_id='%s:%s' % (user_name, file_id))
     except api.ivle.IVLEUnknownErrorException as e:
         return  # TODO: Walao eh IVLE bug again
+    except Exception as e:
+        return  # TODO: inform admin
 
 # queue_all_user()

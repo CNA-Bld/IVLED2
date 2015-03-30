@@ -40,9 +40,9 @@ def validate_token(user):
 def parse_folder(user, folder, father_directory):
     file_list = []
     father_directory = father_directory.strip()
-    if (folder['AllowUpload'] == False) or user.uploadable_folder:
+    if (not folder['AllowUpload']) or user.uploadable_folder:
         if len(folder['Files']) > 0:  # There do exist folders containing both files and folders.
-            for single_file in folder['Files']:  # We do not add course info here to avoid too many parameters.
+            for single_file in folder['Files']:
                 if not (utils.misc.is_ignored_file(single_file['FileName'])):
                     file_list.append({'path': father_directory + folder['FolderName'].strip(' .') + '/' + single_file['FileName'],
                                       'id': single_file['ID']})
@@ -54,14 +54,14 @@ def parse_folder(user, folder, father_directory):
 
 def read_file_list(user, CourseCode, CourseID):
     data = requests.get('https://ivle.nus.edu.sg/api/Lapi.svc/Workbins?APIKey=%s&AuthToken=%s&CourseID=%s&Duration=0&WorkbinID=&TitleOnly=false' % (
-    IVLE_APIKEY, user.ivle_token, CourseID)).json()
+        IVLE_APIKEY, user.ivle_token, CourseID)).json()
     file_list = []
     if len(data['Results']) > 1:  # We treat modules with one or more workbins differently because we do not want to merge files in different workbins.
         for workbin in data['Results']:
             if len(workbin['Folders']) > 0:  # It is not allowed to have files in the root directory of a workbin.
                 for folder in workbin['Folders']:
                     file_list.extend(parse_folder(user, folder, '/%s/%s/' % (
-                    utils.misc.module_code_safe_check(CourseCode), utils.misc.module_code_safe_check(workbin['Title']).strip(' .'))))
+                        utils.misc.module_code_safe_check(CourseCode), utils.misc.module_code_safe_check(workbin['Title']).strip(' .'))))
     elif len(data['Results']) == 1:
         workbin = data['Results'][0]
         if len(workbin['Folders']) > 0:
@@ -79,3 +79,15 @@ def read_all_file_list(user):
 
 def get_file_url(user, file_id):
     return "https://ivle.nus.edu.sg/api/downloadfile.ashx?APIKey=%s&AuthToken=%s&ID=%s&target=workbin" % (IVLE_APIKEY, user.ivle_token, file_id)
+
+
+class IVLEUnknownErrorException(BaseException):
+    pass
+
+
+def get_file(url):
+    request = requests.get(url)
+    if request.headers['Content-Type'] == 'text/html' and 'Your actions have caused an error' in request.content:
+        raise IVLEUnknownErrorException()  # TODO: IVLE Bug
+    else:
+        return request.content

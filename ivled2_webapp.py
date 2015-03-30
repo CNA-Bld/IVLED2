@@ -76,8 +76,10 @@ def settings_submit():
         else:  # TODO: Should never reach
             user.enabled = False
             user.update()
-            return 'false'
+            return json.dumps({'result': False})
     except drivers.SyncException as e:
+        user.enabled = False
+        user.update()
         return json.dumps({'result': False, 'message': e.message})
 
 

@@ -33,6 +33,12 @@ def do_user(user_name):
         return
 
     try:
+        if not api.ivle.validate_token(user):
+            pass  # TODO: Handler not ready yet, should send email
+    except Exception as e:
+        pass  # TODO
+
+    try:
         file_list = api.ivle.read_all_file_list(user)
     except Exception as e:  # TODO: Should be Json Parsing Exception & Network Exception - not ready yet
         return
@@ -45,6 +51,8 @@ def do_user(user_name):
 def do_file(user_name, file_id, file_path):
     user = models.User(user_name)
     url = api.ivle.get_file_url(user, file_id)
+    if file_id in user.synced_files:
+        return  # TODO
     try:
         if not (user.enabled and drivers[user.target].check_settings(user.target_settings)):
             pass
@@ -71,5 +79,7 @@ def do_file(user_name, file_id, file_path):
             user.update()
         return
         # file_queue.enqueue_call(func=do_file, args=(user_name, file_id, file_path), job_id='%s:%s' % (user_name, file_id))
+    except api.ivle.IVLEUnknownErrorException as e:
+        return  # TODO: Walao eh IVLE bug again
 
 # queue_all_user()

@@ -22,6 +22,7 @@ class BaseDriver():
 
     # Error handling here. Return True if transfer succeeded. Return False if a retry is needed.
     # Throw an Exception to trigger an email being sent to the user.
+    # But except IVLEUnknownErrorException, which will be handled differently.
     @classmethod
     def transport_file(cls, user_settings, file_url, target_path):
         return True
@@ -60,9 +61,14 @@ class DropboxDriver(BaseDriver):
         try:
             dropbox_client = dropbox.client.DropboxClient(user_settings['token'])
             dropbox_client.put_file(target_path, ivle.get_file(file_url), overwrite=False)
+            return True
         except dropbox.rest.ErrorResponse as e:
             if e.status == 401:
                 raise SyncException("You are not logged in to Dropbox or your token is expired.", retry=True, send_email=True, disable_user=True)
+            elif e.status == 400:
+                raise SyncException(e.error_msg, retry=True, send_email=False, disable_user=False)
+            elif e.status == 503:
+                raise SyncException("Dropbox says you are over quota. We have temporarily disabled syncing for you.", retry=True, send_email=True, disable_user=True)
             return False  # TODO
 
 

@@ -182,7 +182,7 @@ def dropbox_update_folder():
 # Target: Google Drive
 @app.route("/auth/google/")
 def auth_google():
-    pass
+    return ''
 
 
 # End of Google Drive
@@ -190,7 +190,7 @@ def auth_google():
 # Target: OneDrive
 @app.route("/auth/onedrive/")
 def auth_onedrive():
-    pass
+    return ''
 
 
 # End of OneDrive

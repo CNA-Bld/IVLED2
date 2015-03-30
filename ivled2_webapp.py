@@ -6,6 +6,7 @@ from api import ivle
 import dropbox
 
 import models
+from drivers import drivers
 
 app = Flask(__name__)
 
@@ -65,10 +66,15 @@ def settings_submit():
     if 'user_id' not in session or session['user_id'] == '':
         return redirect(url_for('login'))
     user = models.User(session['user_id'])
-    user.enabled = bool(request.form.get('sync_enabled', ''))
-    user.uploadable_folder = bool(request.form.get('uploadable_folder', ''))
-    user.update()
-    return ''
+    if user.target and drivers[user.target].check_settings(user.target_settings):
+        user.enabled = bool(request.form.get('sync_enabled', ''))
+        user.uploadable_folder = bool(request.form.get('uploadable_folder', ''))
+        user.update()
+        return 'true'
+    else:
+        user.enabled = False
+        user.update()
+        return 'false'
 
 
 # Target: Dropbox
@@ -108,10 +114,14 @@ def auth_dropbox_callback():
     except dropbox.client.DropboxOAuth2Flow.ProviderException as e:
         app.logger.exception("Auth error" + str(e))
         abort(403)
-    user.target = 'dropbox'
-    user.target_settings = {'token': access_token, 'folder': ''}
+    if user.target != 'dropbox':
+        user.target = 'dropbox'
+        user.target_settings = {'token': access_token, 'folder': '', 'files_revision': []}
+        flash('Successfully logged in to Dropbox as %s' % dropbox.client.DropboxClient(user.target_settings['token']).account_info()['display_name'], 'info')
+    else:
+        user.target_settings['token'] = access_token
+        flash('Successfully refreshed token for Dropbox user %s' % dropbox.client.DropboxClient(user.target_settings['token']).account_info()['display_name'], 'info')
     user.update()
-    flash('Successfully logged in to Dropbox as %s' % dropbox.client.DropboxClient(user.target_settings['token']).account_info()['display_name'], 'info')
     return redirect(url_for('dashboard'))
 
 

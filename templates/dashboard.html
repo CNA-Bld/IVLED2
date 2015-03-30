@@ -48,10 +48,18 @@
         };
 
 
-        $('#settingsForm').ajaxForm(function () {
-            $.bootstrapGrowl("Settings Saved!", {
-                type: 'info'
-            });
+        $('#settingsForm').ajaxForm({
+            dataType: 'json',
+            success: function (data) {
+                if (data)
+                    $.bootstrapGrowl("Settings Saved!", {
+                        type: 'info'
+                    });
+                else
+                    $.bootstrapGrowl("Something went wrong, please check your target settings.", {
+                        type: 'warning'
+                    });
+            }
         });
 
         {% if target == 'dropbox' %}
@@ -169,7 +177,8 @@
                 </div>
                 <div class="checkbox">
                     <label>
-                        <input type="checkbox" name="uploadable_folder" {% if uploadable_folder %}checked="checked"{% endif %}> Allow Syncing of Uploadable Folder
+                        <input type="checkbox" name="uploadable_folder" {% if uploadable_folder %}checked="checked"{% endif %}> Allow Syncing of Uploadable
+                        Folder
                     </label>
                 </div>
                 <button type="submit" class="btn btn-block btn-primary">Save</button>

@@ -60,7 +60,7 @@ class DropboxDriver(BaseDriver):
             return  # TODO
         try:
             dropbox_client = dropbox.client.DropboxClient(user_settings['token'])
-            dropbox_client.put_file(target_path, ivle.get_file(file_url), overwrite=False)
+            dropbox_client.put_file(user_settings['folder'] + target_path, ivle.get_file(file_url), overwrite=False)
             return True
         except dropbox.rest.ErrorResponse as e:
             if e.status == 401:
@@ -68,7 +68,8 @@ class DropboxDriver(BaseDriver):
             elif e.status == 400:
                 raise SyncException(e.error_msg, retry=True, send_email=False, disable_user=False)
             elif e.status == 503:
-                raise SyncException("Dropbox says you are over quota. We have temporarily disabled syncing for you.", retry=True, send_email=True, disable_user=True)
+                raise SyncException("Dropbox says you are over quota. We have temporarily disabled syncing for you.", retry=True, send_email=True,
+                                    disable_user=True)
             return False  # TODO
 
 

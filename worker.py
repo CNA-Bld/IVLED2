@@ -23,7 +23,7 @@ def do_user(user_name):
     user = models.User(user_name)
     try:
         if not (user.enabled and drivers[user.target].check_settings(user.target_settings)):
-            pass  # TODO: Should not come here
+            return  # TODO: Should not come here
     except SyncException as e:
         if e.disable_user:
             user.enabled = False

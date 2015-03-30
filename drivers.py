@@ -1,4 +1,5 @@
 import dropbox
+from api import ivle
 
 
 class SyncException(BaseException):
@@ -50,6 +51,18 @@ class DropboxDriver(BaseDriver):
         except dropbox.rest.ErrorResponse as e:
             if e.status == 401:
                 raise SyncException("You are not logged in to Dropbox or your token is expired.", retry=False, send_email=True, disable_user=True)
+            return False  # TODO
+
+    @classmethod
+    def transport_file(cls, user_settings, file_url, target_path):
+        if not cls.check_settings(user_settings):
+            return  # TODO
+        try:
+            dropbox_client = dropbox.client.DropboxClient(user_settings['token'])
+            dropbox_client.put_file(target_path, ivle.get_file(file_url), overwrite=False)
+        except dropbox.rest.ErrorResponse as e:
+            if e.status == 401:
+                raise SyncException("You are not logged in to Dropbox or your token is expired.", retry=True, send_email=True, disable_user=True)
             return False  # TODO
 
 

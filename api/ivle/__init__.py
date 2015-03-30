@@ -45,7 +45,7 @@ def parse_folder(user, folder, father_directory):
             for single_file in folder['Files']:
                 if not (utils.misc.is_ignored_file(single_file['FileName'])):
                     file_list.append({'path': father_directory + folder['FolderName'].strip(' .') + '/' + single_file['FileName'],
-                                      'id': single_file['ID']})
+                                      'ID': single_file['ID']})
         if len(folder['Folders']) > 0:
             for single_folder in folder['Folders']:
                 file_list.extend(parse_folder(user, single_folder, father_directory + folder['FolderName'].strip(' .') + '/'))
@@ -89,5 +89,7 @@ def get_file(url):
     request = requests.get(url)
     if request.headers['Content-Type'] == 'text/html' and 'Your actions have caused an error' in request.content:
         raise IVLEUnknownErrorException()  # TODO: IVLE Bug
-    else:
+    elif request.status_code == 200:
         return request.content
+    else:
+        raise IVLEUnknownErrorException()  # TODO: A lot of IVLE Bugs

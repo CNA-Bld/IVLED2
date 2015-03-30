@@ -2,9 +2,13 @@ import dropbox
 
 
 class SyncException(BaseException):
-    def __init__(self, message, retry=False, send_email=False):
+    # Retry means to not give up. It is not guaranteed that will immediately retry - will after a while.
+    # If retry is False during transferring file we will give up that file and never try again.
+    # If disable_user is True we will disable the user until he manually re-enable it.
+    def __init__(self, message, retry=False, send_email=False, disable_user=False):
         self.retry = retry
         self.send_email = send_email
+        self.disable_user = disable_user
         self.message = message
         super()
 
@@ -25,27 +29,27 @@ class BaseDriver():
 class NullDriver(BaseDriver):
     @classmethod
     def check_settings(cls, user_settings):
-        raise SyncException("You have not selected a target service.", retry=False, send_email=True)
+        raise SyncException("You have not selected a target service.", retry=False, send_email=True, disable_user=True)
 
     @classmethod
     def transport_file(cls, user_settings, file_url, target_path):
-        raise SyncException("You have not selected a target service.", retry=False, send_email=True)
+        raise SyncException("You have not selected a target service.", retry=False, send_email=True, disable_user=True)
 
 
 class DropboxDriver(BaseDriver):
     @classmethod
     def check_settings(cls, user_settings):
         if not user_settings['token']:
-            raise SyncException("You are not logged in to Dropbox or your token is expired.", retry=False, send_email=True)
+            raise SyncException("You are not logged in to Dropbox or your token is expired.", retry=False, send_email=True, disable_user=True)
         if not user_settings['folder']:
-            raise SyncException("You have not set your target folder.", retry=False, send_email=True)
+            raise SyncException("You have not set your target folder.", retry=False, send_email=True, disable_user=True)
         try:
             dropbox_client = dropbox.client.DropboxClient(user_settings['token'])
             if dropbox_client.account_info():
                 return True
         except dropbox.rest.ErrorResponse as e:
             if e.status == 401:
-                raise SyncException("You are not logged in to Dropbox or your token is expired.", retry=False, send_email=True)
+                raise SyncException("You are not logged in to Dropbox or your token is expired.", retry=False, send_email=True, disable_user=True)
             return False  # TODO
 
 

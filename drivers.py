@@ -6,10 +6,11 @@ class SyncException(BaseException):
     # Retry means to not give up. It is not guaranteed that will immediately retry - will after a while.
     # If retry is False during transferring file we will give up that file and never try again.
     # If disable_user is True we will disable the user until he manually re-enable it.
-    def __init__(self, message, retry=False, send_email=False, disable_user=False):
+    def __init__(self, message, retry=False, send_email=False, disable_user=False, logout_user=False):
         self.retry = retry
         self.send_email = send_email
         self.disable_user = disable_user
+        self.logout_user = logout_user
         self.message = message
         super()
 
@@ -33,27 +34,27 @@ class BaseDriver():
 class NullDriver(BaseDriver):
     @classmethod
     def check_settings(cls, user_settings):
-        raise SyncException("You have not selected a target service.", retry=False, send_email=True, disable_user=True)
+        raise SyncException("You have not selected a target service.", retry=False, send_email=True, disable_user=True, logout_user=False)
 
     @classmethod
     def transport_file(cls, user_settings, file_url, target_path):
-        raise SyncException("You have not selected a target service.", retry=False, send_email=True, disable_user=True)
+        raise SyncException("You have not selected a target service.", retry=False, send_email=True, disable_user=True, logout_user=False)
 
 
 class DropboxDriver(BaseDriver):
     @classmethod
     def check_settings(cls, user_settings):
         if not user_settings['token']:
-            raise SyncException("You are not logged in to Dropbox or your token is expired. Please re-login on the webpage.", retry=False, send_email=True, disable_user=True)
+            raise SyncException("You are not logged in to Dropbox or your token is expired. Please re-login on the webpage.", retry=False, send_email=True, disable_user=True, logout_user=True)
         if not user_settings['folder']:
-            raise SyncException("You have not set your target folder.", retry=False, send_email=True, disable_user=True)
+            raise SyncException("You have not set your target folder.", retry=False, send_email=True, disable_user=True, logout_user=False)
         try:
             dropbox_client = dropbox.client.DropboxClient(user_settings['token'])
             if dropbox_client.account_info():
                 return True
         except dropbox.rest.ErrorResponse as e:
             if e.status == 401:
-                raise SyncException("You are not logged in to Dropbox or your token is expired. Please re-login on the webpage.", retry=False, send_email=True, disable_user=True)
+                raise SyncException("You are not logged in to Dropbox or your token is expired. Please re-login on the webpage.", retry=False, send_email=True, disable_user=True, logout_user=True)
             return False  # TODO
 
     @classmethod
@@ -67,12 +68,12 @@ class DropboxDriver(BaseDriver):
             return True
         except dropbox.rest.ErrorResponse as e:
             if e.status == 401:
-                raise SyncException("You are not logged in to Dropbox or your token is expired. Please re-login on the webpage.", retry=True, send_email=True, disable_user=True)
+                raise SyncException("You are not logged in to Dropbox or your token is expired. Please re-login on the webpage.", retry=True, send_email=True, disable_user=True, logout_user=True)
             elif e.status == 400:
-                raise SyncException(e.error_msg, retry=True, send_email=False, disable_user=False)
+                raise SyncException(e.error_msg, retry=True, send_email=False, disable_user=False, logout_user=False)
             elif e.status == 503:
-                raise SyncException("Dropbox says you are over quota. We have temporarily disabled syncing for you.", retry=True, send_email=True,
-                                    disable_user=True)
+                raise SyncException("Dropbox says you are over quota. We have temporarily disabled syncing for you. Please manually re-enable after cleaning up some files.", retry=True, send_email=True,
+                                    disable_user=True, logout_user=False)
             return False  # TODO
 
 

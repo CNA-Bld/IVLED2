@@ -31,6 +31,11 @@ def do_user(user_name):
             user.enabled = False
             user.update()
             user.release_lock()
+        if e.logout_user:
+            user.acquire_lock()
+            user.target = None
+            user.update()
+            user.release_lock()
         if e.send_email:
             mail.send_email(user.email, 'An Error Happened.', mail.EXCEPTION_FORMAT % (e.message, mail.compress_traceback(traceback.format_exc())))
         return
@@ -71,6 +76,11 @@ def do_file(user_name, file_id, file_path):
             user.enabled = False
             user.update()
             user.release_lock()
+        if e.logout_user:
+            user.acquire_lock()
+            user.target = None
+            user.update()
+            user.release_lock()
         if e.send_email:
             mail.send_email(user.email, 'An Error Happened.', mail.EXCEPTION_FORMAT % (e.message, mail.compress_traceback(traceback.format_exc())))
         return
@@ -94,6 +104,11 @@ def do_file(user_name, file_id, file_path):
         if e.disable_user:
             user.acquire_lock()
             user.enabled = False
+            user.update()
+            user.release_lock()
+        if e.logout_user:
+            user.acquire_lock()
+            user.target = None
             user.update()
             user.release_lock()
         return

@@ -4,7 +4,9 @@ Flask==0.10.1
 itsdangerous==0.24
 Jinja2==2.7.3
 MarkupSafe==0.23
+python-redis-lock==2.1.0
 redis==2.10.3
+redlock==1.0.0
 requests==2.6.0
 rq==0.5.1
 urllib3==1.10.2

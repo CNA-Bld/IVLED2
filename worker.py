@@ -88,11 +88,10 @@ def do_file(user_name, file_id, file_path):
         pass  # TODO: Inform admin
 
     try:
-        drivers[user.target].transport_file(user.target_settings, url, file_path)
         user.acquire_lock()
+        drivers[user.target].transport_file(user.target_settings, url, file_path)
         user.synced_files.append(file_id)
         user.update()
-        user.release_lock()
     except SyncException as e:
         if not e.retry:
             user.acquire_lock()
@@ -116,5 +115,7 @@ def do_file(user_name, file_id, file_path):
         return  # TODO: Walao eh IVLE bug again, skip it and inform the admin
     except Exception as e:
         return  # TODO: inform admin
+    finally:
+        user.release_lock()
 
 # queue_all_user()

@@ -26,7 +26,7 @@ def get_modules_list(user):
     return modules_list
 
 
-def validate_token(user):
+def validate_token(user):  # Due to IVLE bugs we temporarily dirty hack here
     try:
         result = requests.get('https://ivle.nus.edu.sg/api/Lapi.svc/Validate?APIKey=%s&Token=%s' % (IVLE_APIKEY, user.ivle_token)).json()
     except:

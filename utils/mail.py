@@ -1,8 +1,17 @@
 from config import SMTP_SERVER, SMTP_PORT, SMTP_USER, SMTP_PASSWORD, SMTP_FROM, MODULE_VERSION
 
+import gzip, zlib
+import base64
 import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+
+EXCEPTION_FORMAT = '''An error happened during syncing: %s
+
+Please try to fix the problem at <a href="https://nusync.sshz.org/">https://nusync.sshz.org/</a>.
+
+If you believe that this is an error, please include the following information while contacting the developer:
+%s'''
 
 SIGN = '''
 
@@ -34,3 +43,11 @@ def prepare_email(to, subject, content):
 
 def send_email(to, subject, content):
     return send_smtp(to, prepare_email(to, 'IVLE Syncer: ' + subject, content + SIGN).as_string())
+
+
+def compress_traceback(tb):
+    return base64.b64encode(zlib.compress(tb.encode('ascii'))).decode("utf-8")
+
+
+def decompress_traceback(compressed_tb):
+    return zlib.decompress(base64.b64decode(compressed_tb.encode('ascii'))).decode("utf-8")

@@ -16,6 +16,7 @@ class SyncException(BaseException):
 
 class BaseDriver():
     # Drivers should do error handling here. Throw an Exception to trigger an email being sent to the user.
+    # Should NEVER return False, raise an exception if something is wrong!
     @classmethod
     def check_settings(cls, user_settings):
         return True
@@ -23,6 +24,7 @@ class BaseDriver():
     # Error handling here. Return True if transfer succeeded. Return False if a retry is needed.
     # Throw an Exception to trigger an email being sent to the user.
     # But except IVLEUnknownErrorException, which will be handled differently.
+    # Should NEVER return False, raise an exception if something is wrong!
     @classmethod
     def transport_file(cls, user_settings, file_url, target_path):
         return True
@@ -42,7 +44,7 @@ class DropboxDriver(BaseDriver):
     @classmethod
     def check_settings(cls, user_settings):
         if not user_settings['token']:
-            raise SyncException("You are not logged in to Dropbox or your token is expired.", retry=False, send_email=True, disable_user=True)
+            raise SyncException("You are not logged in to Dropbox or your token is expired. Please re-login on the webpage.", retry=False, send_email=True, disable_user=True)
         if not user_settings['folder']:
             raise SyncException("You have not set your target folder.", retry=False, send_email=True, disable_user=True)
         try:
@@ -51,7 +53,7 @@ class DropboxDriver(BaseDriver):
                 return True
         except dropbox.rest.ErrorResponse as e:
             if e.status == 401:
-                raise SyncException("You are not logged in to Dropbox or your token is expired.", retry=False, send_email=True, disable_user=True)
+                raise SyncException("You are not logged in to Dropbox or your token is expired. Please re-login on the webpage.", retry=False, send_email=True, disable_user=True)
             return False  # TODO
 
     @classmethod
@@ -60,11 +62,12 @@ class DropboxDriver(BaseDriver):
             return  # TODO
         try:
             dropbox_client = dropbox.client.DropboxClient(user_settings['token'])
-            dropbox_client.put_file(user_settings['folder'] + target_path, ivle.get_file(file_url), overwrite=False)
+            file_data = dropbox_client.put_file(user_settings['folder'] + target_path, ivle.get_file(file_url), parent_rev=user_settings['files_revision'].get(target_path, ''))
+            user_settings['files_revision'][target_path] = file_data['revision']
             return True
         except dropbox.rest.ErrorResponse as e:
             if e.status == 401:
-                raise SyncException("You are not logged in to Dropbox or your token is expired.", retry=True, send_email=True, disable_user=True)
+                raise SyncException("You are not logged in to Dropbox or your token is expired. Please re-login on the webpage.", retry=True, send_email=True, disable_user=True)
             elif e.status == 400:
                 raise SyncException(e.error_msg, retry=True, send_email=False, disable_user=False)
             elif e.status == 503:

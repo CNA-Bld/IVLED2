@@ -1,5 +1,6 @@
 import rq
 
+import traceback
 import models
 from utils import db
 from utils import mail
@@ -23,7 +24,7 @@ def do_user(user_name):
     user = models.User(user_name)
     try:
         if not (user.enabled and drivers[user.target].check_settings(user.target_settings)):
-            return  # TODO: Should not come here
+            return  # Drivers should always return True or throw Exception. This means user disabled somewhere, we skip the user.
     except SyncException as e:
         if e.disable_user:
             user.acquire_lock()
@@ -31,21 +32,25 @@ def do_user(user_name):
             user.update()
             user.release_lock()
         if e.send_email:
-            pass  # TODO: Handler not ready yet.
+            mail.send_email(user.email, 'An Error Happened.', mail.EXCEPTION_FORMAT % (e.message, mail.compress_traceback(traceback.format_exc())))
         return
     except Exception as e:
-        return  # TODO: Inform admin
+        return  # TODO: Should not come here, let's inform the admin
 
     try:
         if not api.ivle.validate_token(user):
-            pass  # TODO: Handler not ready yet, should send email
+            mail.send_email(user.email, 'IVLE Login Expired.', "Your IVLE login has expired. Please refresh by accessing our page and re-enable syncing.")
+            user.acquire_lock()
+            user.enabled = False
+            user.update()
+            user.release_lock()
     except Exception as e:
-        return  # TODO
+        return  # TODO: inform admin
 
     try:
         file_list = api.ivle.read_all_file_list(user)
-    except Exception as e:  # TODO: Should be Json Parsing Exception & Network Exception - not ready yet
-        return
+    except Exception as e:
+        return  # TODO: Should be Json Parsing Exception & Network Exception - We skip the user and inform the admin
 
     for file in file_list:
         if file['ID'] not in user.synced_files and not file_queue.fetch_job('%s:%s' % (user_name, file['ID'])):
@@ -59,7 +64,7 @@ def do_file(user_name, file_id, file_path):
         return  # TODO
     try:
         if not (user.enabled and drivers[user.target].check_settings(user.target_settings)):
-            pass
+            return  # TODO
     except SyncException as e:
         if e.disable_user:
             user.acquire_lock()
@@ -67,7 +72,7 @@ def do_file(user_name, file_id, file_path):
             user.update()
             user.release_lock()
         if e.send_email:
-            pass  # TODO: Handler not ready yet.
+            mail.send_email(user.email, 'An Error Happened.', mail.EXCEPTION_FORMAT % (e.message, mail.compress_traceback(traceback.format_exc())))
         return
     except Exception as e:
         pass  # TODO: Inform admin
@@ -85,16 +90,15 @@ def do_file(user_name, file_id, file_path):
             user.update()
             user.release_lock()
         if e.send_email:
-            pass  # TODO: Handler not ready yet.
+            mail.send_email(user.email, 'An Error Happened.', mail.EXCEPTION_FORMAT % (e.message, mail.compress_traceback(traceback.format_exc())))
         if e.disable_user:
             user.acquire_lock()
             user.enabled = False
             user.update()
             user.release_lock()
         return
-        # file_queue.enqueue_call(func=do_file, args=(user_name, file_id, file_path), job_id='%s:%s' % (user_name, file_id))
     except api.ivle.IVLEUnknownErrorException as e:
-        return  # TODO: Walao eh IVLE bug again
+        return  # TODO: Walao eh IVLE bug again, skip it and inform the admin
     except Exception as e:
         return  # TODO: inform admin
 

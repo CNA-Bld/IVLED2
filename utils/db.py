@@ -28,7 +28,9 @@ def get_user_dict(user_id):
 
 def update_user(user):
     add_user_to_set(user.user_id)
-    return set_value(PREFIX_USER + user.user_id, user.to_dict())
+    d = user.to_dict().copy()
+    d.pop('lock', None)
+    return set_value(PREFIX_USER + user.user_id, d)
 
 
 def get_users():

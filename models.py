@@ -1,11 +1,13 @@
 from utils import db
 import random
 import string
+import redis_lock
 
 
 class User():
     def __init__(self, user_id, user_email=None):
         self.user_id = user_id
+        self.lock = redis_lock.Lock(db.r, user_id)
         if db.get_user_dict(user_id):
             self.__dict__.update(db.get_user_dict(user_id))
         else:
@@ -21,11 +23,20 @@ class User():
             self.update()
 
     def update_ivle_token(self, new_token):
+        self.acquire_lock()
         self.ivle_token = new_token
         self.update()
+        self.release_lock()
 
     def to_dict(self):
         return self.__dict__
+
+    def acquire_lock(self):
+        self.lock.acquire(True)
+        self.__dict__.update(db.get_user_dict(self.user_id))
+
+    def release_lock(self):
+        self.lock.release()
 
     def update(self):
         db.update_user(self)

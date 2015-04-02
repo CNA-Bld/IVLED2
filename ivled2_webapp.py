@@ -48,8 +48,10 @@ def modules_submit():
     for course in request.form:
         course_code, course_id = str(course).split('|')
         courses.append({'Code': course_code, 'ID': course_id})
+    user.acquire_lock()
     user.modules = courses
     user.update()
+    user.release_lock()
     return ""
 
 
@@ -69,17 +71,23 @@ def settings_submit():
     user = models.User(session['user_id'])
     try:
         if drivers.drivers[user.target].check_settings(user.target_settings):
+            user.acquire_lock()
             user.enabled = bool(request.form.get('sync_enabled', ''))
             user.uploadable_folder = bool(request.form.get('uploadable_folder', ''))
             user.update()
+            user.release_lock()
             return json.dumps({'result': True})
         else:  # TODO: Should never reach
+            user.acquire_lock()
             user.enabled = False
             user.update()
+            user.release_lock()
             return json.dumps({'result': False})
     except drivers.SyncException as e:
+        user.acquire_lock()
         user.enabled = False
         user.update()
+        user.release_lock()
         return json.dumps({'result': False, 'message': e.message})
 
 
@@ -121,6 +129,7 @@ def auth_dropbox_callback():
     except dropbox.client.DropboxOAuth2Flow.ProviderException as e:
         app.logger.exception("Auth error" + str(e))
         abort(403)
+    user.acquire_lock()
     if user.target != 'dropbox':
         user.target = 'dropbox'
         user.target_settings = {'token': access_token, 'folder': '', 'files_revision': []}
@@ -129,6 +138,7 @@ def auth_dropbox_callback():
         user.target_settings['token'] = access_token
         flash('Successfully refreshed token for Dropbox user %s' % dropbox.client.DropboxClient(user.target_settings['token']).account_info()['display_name'], 'info')
     user.update()
+    user.release_lock()
     return redirect(url_for('dashboard'))
 
 
@@ -137,9 +147,11 @@ def auth_dropbox_unauth():
     if 'user_id' not in session or session['user_id'] == '':
         return redirect(url_for('login'))
     user = models.User(session['user_id'])
+    user.acquire_lock()
     user.target = None
     user.target_settings = {}
     user.update()
+    user.release_lock()
     flash('Successfully logged out from Dropbox.', 'warning')
     return redirect(url_for('dashboard'))
 
@@ -167,9 +179,11 @@ def dropbox_update_folder():
     dropbox_client = dropbox.client.DropboxClient(user.target_settings['token'])
     file_list = dropbox_client.search('/', '.Your_Workbin_Files')
     if file_list:
+        user.acquire_lock()
         new_path = file_list[0]['path']
         user.target_settings['folder'] = new_path[:new_path.rfind('/') + 1]
         user.update()
+        user.release_lock()
         dropbox_client.file_delete(new_path)
         return user.target_settings['folder']
     else:

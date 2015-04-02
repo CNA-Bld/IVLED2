@@ -26,8 +26,10 @@ def do_user(user_name):
             return  # TODO: Should not come here
     except SyncException as e:
         if e.disable_user:
+            user.acquire_lock()
             user.enabled = False
             user.update()
+            user.release_lock()
         if e.send_email:
             pass  # TODO: Handler not ready yet.
         return
@@ -60,8 +62,10 @@ def do_file(user_name, file_id, file_path):
             pass
     except SyncException as e:
         if e.disable_user:
+            user.acquire_lock()
             user.enabled = False
             user.update()
+            user.release_lock()
         if e.send_email:
             pass  # TODO: Handler not ready yet.
         return
@@ -70,17 +74,23 @@ def do_file(user_name, file_id, file_path):
 
     try:
         drivers[user.target].transport_file(user.target_settings, url, file_path)
+        user.acquire_lock()
         user.synced_files.append(file_id)
         user.update()
+        user.release_lock()
     except SyncException as e:
         if not e.retry:
+            user.acquire_lock()
             user.synced_files.append(file_id)
             user.update()
+            user.release_lock()
         if e.send_email:
             pass  # TODO: Handler not ready yet.
         if e.disable_user:
+            user.acquire_lock()
             user.enabled = False
             user.update()
+            user.release_lock()
         return
         # file_queue.enqueue_call(func=do_file, args=(user_name, file_id, file_path), job_id='%s:%s' % (user_name, file_id))
     except api.ivle.IVLEUnknownErrorException as e:

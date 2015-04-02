@@ -10,7 +10,7 @@
                     <label>
                         <input type="checkbox" class="module-checkbox" name="{{ module.CourseCode }}|{{ module.ID }}"
                                {% if module.CourseCode in selected_modules %}checked="checked"{% endif %} data-size="small">
-                        {{ module.CourseCode }}
+                        {{ module.CourseCode }} {{ module.CourseName }}
                     </label>
                 </div>
             {% endfor %}

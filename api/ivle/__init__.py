@@ -22,7 +22,7 @@ def get_modules_list(user):
         raise Exception()  # TODO
     modules_list = []
     for module in request.json()['Results']:
-        modules_list.append({x: module[x] for x in ['CourseCode', 'ID']})
+        modules_list.append({x: module[x] for x in ['CourseCode', 'ID', 'CourseName']})
     return modules_list
 
 

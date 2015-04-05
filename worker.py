@@ -1,5 +1,6 @@
 import rq
 
+import time
 import traceback
 import models
 from utils import db
@@ -17,6 +18,7 @@ def queue_all_user():
         user_name = user_name.decode("utf-8")
         if models.User(user_name).enabled and (not user_queue.fetch_job(user_name) or user_queue.fetch_job(user_name).status == 'finished'):
             user_queue.enqueue_call(func=do_user, args=(user_name,), job_id=user_name)
+    time.sleep(60)  # TODO: Temporary hard code here
     user_queue.enqueue_call(func=queue_all_user, job_id='METAJOB')
 
 

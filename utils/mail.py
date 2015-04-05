@@ -1,4 +1,4 @@
-from config import SMTP_SERVER, SMTP_PORT, SMTP_USER, SMTP_PASSWORD, SMTP_FROM, MODULE_VERSION
+from config import SMTP_SERVER, SMTP_PORT, SMTP_USER, SMTP_PASSWORD, SMTP_FROM, MODULE_VERSION, ADMIN_EMAILS
 
 import gzip, zlib
 import base64
@@ -45,8 +45,17 @@ def send_email(to, subject, content):
     return send_smtp(to, prepare_email(to, 'IVLE Syncer: ' + subject, content + SIGN).as_string())
 
 
-def compress_traceback(tb):
-    return base64.b64encode(zlib.compress(tb.encode('ascii'))).decode("utf-8")
+def send_error_to_user(email, message, tb, lcs):
+    return send_email(email, 'An Error Happened.', EXCEPTION_FORMAT % (message, compress_traceback(tb, lcs)))
+
+
+def send_error_to_admin(tb, lcs):
+    for email in ADMIN_EMAILS:
+        send_email(email, 'Error', "Locals = %s\n%s" % (lcs, tb))
+
+
+def compress_traceback(tb, lcs):
+    return base64.b64encode(zlib.compress(("Locals = %s\n%s" % (lcs, tb)).encode('ascii'))).decode("utf-8")
 
 
 def decompress_traceback(compressed_tb):

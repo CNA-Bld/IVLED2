@@ -34,10 +34,11 @@ def do_user(user_name):
             user.target = None
             user.update()
         if e.send_email:
-            mail.send_email(user.email, 'An Error Happened.', mail.EXCEPTION_FORMAT % (e.message, mail.compress_traceback(traceback.format_exc())))
+            mail.send_error_to_user(user.email, e.message, traceback.format_exc(), locals())
         return
     except Exception as e:
-        return  # TODO: Should not come here, let's inform the admin
+        mail.send_error_to_admin(traceback.format_exc(), locals())  # TODO
+        return
     finally:
         user.release_lock()
 
@@ -49,11 +50,13 @@ def do_user(user_name):
             user.update()
             user.release_lock()
     except Exception as e:
-        return  # TODO: inform admin
+        mail.send_error_to_admin(traceback.format_exc(), locals())  # TODO
+        return
 
     try:
         file_list = api.ivle.read_all_file_list(user)
     except Exception as e:
+        mail.send_error_to_admin(traceback.format_exc(), locals())
         return  # TODO: Should be Json Parsing Exception & Network Exception - We skip the user and inform the admin
 
     for file in file_list:
@@ -78,9 +81,10 @@ def do_file(user_name, file_id, file_path):
             user.target = None
             user.update()
         if e.send_email:
-            mail.send_email(user.email, 'An Error Happened.', mail.EXCEPTION_FORMAT % (e.message, mail.compress_traceback(traceback.format_exc())))
+            mail.send_error_to_user(user.email, e.message, traceback.format_exc(), locals())
         return
     except Exception as e:
+        mail.send_error_to_admin(traceback.format_exc(), locals())
         pass  # TODO: Inform admin
     finally:
         user.release_lock()
@@ -95,7 +99,7 @@ def do_file(user_name, file_id, file_path):
             user.synced_files.append(file_id)
             user.update()
         if e.send_email:
-            mail.send_email(user.email, 'An Error Happened.', mail.EXCEPTION_FORMAT % (e.message, mail.compress_traceback(traceback.format_exc())))
+            mail.send_error_to_user(user.email, e.message, traceback.format_exc(), locals())
         if e.disable_user:
             user.enabled = False
             user.update()
@@ -104,8 +108,10 @@ def do_file(user_name, file_id, file_path):
             user.update()
         return
     except api.ivle.IVLEUnknownErrorException as e:
+        mail.send_error_to_admin(traceback.format_exc(), locals())
         return  # TODO: Walao eh IVLE bug again, skip it and inform the admin
     except Exception as e:
+        mail.send_error_to_admin(traceback.format_exc(), locals())
         return  # TODO: inform admin
     finally:
         user.release_lock()

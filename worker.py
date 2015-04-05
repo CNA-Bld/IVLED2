@@ -23,24 +23,23 @@ def queue_all_user():
 def do_user(user_name):
     user = models.User(user_name)
     try:
+        user.acquire_lock()
         if not (user.enabled and drivers[user.target].check_settings(user.target_settings)):
             return  # Drivers should always return True or throw Exception. This means user disabled somewhere, we skip the user.
     except SyncException as e:
         if e.disable_user:
-            user.acquire_lock()
             user.enabled = False
             user.update()
-            user.release_lock()
         if e.logout_user:
-            user.acquire_lock()
             user.target = None
             user.update()
-            user.release_lock()
         if e.send_email:
             mail.send_email(user.email, 'An Error Happened.', mail.EXCEPTION_FORMAT % (e.message, mail.compress_traceback(traceback.format_exc())))
         return
     except Exception as e:
         return  # TODO: Should not come here, let's inform the admin
+    finally:
+        user.release_lock()
 
     try:
         if not api.ivle.validate_token(user):
@@ -68,24 +67,23 @@ def do_file(user_name, file_id, file_path):
     if file_id in user.synced_files:
         return  # TODO
     try:
+        user.acquire_lock()
         if not (user.enabled and drivers[user.target].check_settings(user.target_settings)):
             return  # TODO
     except SyncException as e:
         if e.disable_user:
-            user.acquire_lock()
             user.enabled = False
             user.update()
-            user.release_lock()
         if e.logout_user:
-            user.acquire_lock()
             user.target = None
             user.update()
-            user.release_lock()
         if e.send_email:
             mail.send_email(user.email, 'An Error Happened.', mail.EXCEPTION_FORMAT % (e.message, mail.compress_traceback(traceback.format_exc())))
         return
     except Exception as e:
         pass  # TODO: Inform admin
+    finally:
+        user.release_lock()
 
     try:
         user.acquire_lock()
@@ -94,22 +92,16 @@ def do_file(user_name, file_id, file_path):
         user.update()
     except SyncException as e:
         if not e.retry:
-            user.acquire_lock()
             user.synced_files.append(file_id)
             user.update()
-            user.release_lock()
         if e.send_email:
             mail.send_email(user.email, 'An Error Happened.', mail.EXCEPTION_FORMAT % (e.message, mail.compress_traceback(traceback.format_exc())))
         if e.disable_user:
-            user.acquire_lock()
             user.enabled = False
             user.update()
-            user.release_lock()
         if e.logout_user:
-            user.acquire_lock()
             user.target = None
             user.update()
-            user.release_lock()
         return
     except api.ivle.IVLEUnknownErrorException as e:
         return  # TODO: Walao eh IVLE bug again, skip it and inform the admin

@@ -132,7 +132,7 @@ def auth_dropbox_callback():
     user.acquire_lock()
     if user.target != 'dropbox':
         user.target = 'dropbox'
-        user.target_settings = {'token': access_token, 'folder': '', 'files_revision': []}
+        user.target_settings = {'token': access_token, 'folder': '', 'files_revision': {}}
         flash('Successfully logged in to Dropbox as %s' % dropbox.client.DropboxClient(user.target_settings['token']).account_info()['display_name'], 'info')
     else:
         user.target_settings['token'] = access_token

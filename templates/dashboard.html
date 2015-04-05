@@ -103,7 +103,6 @@
             });
         {% endif %}
 
-
     </script>
 
     {% if dropbox_auth %}
@@ -113,6 +112,26 @@
 {% endblock %}
 
 {% block main_body %}
+
+    <div id="unauthModal" class="modal fade" tabindex="-1" data-width="760">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+            <h3>Logout</h3>
+        </div>
+        <div class="modal-body">
+            <div class="row-fluid">
+                <ul>
+                    <li>Very Dangerous!</li>
+                    <li>No one writes this warning message yet.</li>
+                    <li>But anyway very dangerous lah</li>
+                </ul>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" data-dismiss="modal" class="btn btn-default">Cancel</button>
+            <a class="btn btn-danger" href="{% if target == 'dropbox' %}{{ url_for('auth_dropbox_unauth') }}{% endif %}" role="button">Logout</a>
+        </div>
+    </div>
 
     <div class="panel panel-default">
         <div class="panel-heading">
@@ -142,8 +161,7 @@
                     <input type="text" class="form-control" id="textFolder"
                            value="{{ target_settings.folder or 'Unknown / Not Set' }}" disabled>
                 <span class="input-group-btn">
-                        <a class="btn btn-default" href="{{ url_for('auth_dropbox_unauth') }}" role="button"
-                           id="unauthorizeDropbox">Logout</a>
+                        <a class="btn btn-danger" href="#unauthModal" data-toggle="modal" role="button">Logout</a>
                         <button class="btn btn-default" type="button" id="modifyFolder">Set Folder</button>
                 </span>
                 </div>

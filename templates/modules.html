@@ -5,15 +5,23 @@
             <h4>Select Modules</h4>
         </div>
         <div class="modal-body">
-            {% for module in modules %}
-                <div>
+            <div>
+                {% for module in modules %}
                     <label>
                         <input type="checkbox" class="module-checkbox" name="{{ module.CourseCode }}|{{ module.ID }}"
-                               {% if module.CourseCode in selected_modules %}checked="checked"{% endif %} data-size="small">
+                               {% if module.CourseCode in selected_modules %}checked="checked"{% endif %} data-size="mini">
                         {{ module.CourseCode }} {{ module.CourseName }}
                     </label>
+                {% endfor %}
+            </div>
+            <div class="btn-group btn-group-justified" role="group">
+                <div class="btn-group" role="group">
+                    <button type="button" class="btn btn-default btn-sm" id="enableAll">Enable All</button>
                 </div>
-            {% endfor %}
+                <div class="btn-group" role="group">
+                    <button type="button" class="btn btn-default btn-sm" id="disableAll">Disable All</button>
+                </div>
+            </div>
         </div>
         <div class="modal-footer">
             <button type="button" data-dismiss="modal" class="btn btn-default">Close</button>
@@ -25,9 +33,15 @@
 <script>
     $(function () {
         $(".module-checkbox").bootstrapSwitch();
-    });
-    $('#moduleForm').ajaxForm(function () {
-        $('#ajaxModal').modal('hide');
-        modulesCallback();
+        $('#moduleForm').ajaxForm(function () {
+            $('#ajaxModal').modal('hide');
+            modulesCallback();
+        });
+        $('#enableAll').click(function () {
+            $(".module-checkbox").bootstrapSwitch('state', true);
+        });
+        $('#disableAll').click(function () {
+            $(".module-checkbox").bootstrapSwitch('state', false);
+        });
     });
 </script>

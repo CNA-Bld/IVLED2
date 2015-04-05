@@ -3,10 +3,10 @@ from api import ivle
 
 
 class SyncException(BaseException):
-    # Retry means to not give up. It is not guaranteed that will immediately retry - will after a while.
     # If retry is False during transferring file we will give up that file and never try again.
+    # retry is ignored during user checking - i.e. unless it is never going to success, always set to True.
     # If disable_user is True we will disable the user until he manually re-enable it.
-    def __init__(self, message, retry=False, send_email=False, disable_user=False, logout_user=False):
+    def __init__(self, message, retry=True, send_email=False, disable_user=False, logout_user=False):
         self.retry = retry
         self.send_email = send_email
         self.disable_user = disable_user
@@ -34,27 +34,27 @@ class BaseDriver():
 class NullDriver(BaseDriver):
     @classmethod
     def check_settings(cls, user_settings):
-        raise SyncException("You have not selected a target service.", retry=False, send_email=True, disable_user=True, logout_user=False)
+        raise SyncException("You have not selected a target service.", retry=True, send_email=True, disable_user=True, logout_user=False)
 
     @classmethod
     def transport_file(cls, user_settings, file_url, target_path):
-        raise SyncException("You have not selected a target service.", retry=False, send_email=True, disable_user=True, logout_user=False)
+        raise SyncException("You have not selected a target service.", retry=True, send_email=True, disable_user=True, logout_user=False)
 
 
 class DropboxDriver(BaseDriver):
     @classmethod
     def check_settings(cls, user_settings):
         if not user_settings['token']:
-            raise SyncException("You are not logged in to Dropbox or your token is expired. Please re-login on the webpage.", retry=False, send_email=True, disable_user=True, logout_user=True)
+            raise SyncException("You are not logged in to Dropbox or your token is expired. Please re-login on the webpage.", retry=True, send_email=True, disable_user=True, logout_user=True)
         if not user_settings['folder']:
-            raise SyncException("You have not set your target folder.", retry=False, send_email=True, disable_user=True, logout_user=False)
+            raise SyncException("You have not set your target folder.", retry=True, send_email=True, disable_user=True, logout_user=False)
         try:
             dropbox_client = dropbox.client.DropboxClient(user_settings['token'])
             if dropbox_client.account_info():
                 return True
         except dropbox.rest.ErrorResponse as e:
             if e.status == 401:
-                raise SyncException("You are not logged in to Dropbox or your token is expired. Please re-login on the webpage.", retry=False, send_email=True, disable_user=True, logout_user=True)
+                raise SyncException("You are not logged in to Dropbox or your token is expired. Please re-login on the webpage.", retry=True, send_email=True, disable_user=True, logout_user=True)
             return False  # TODO
 
     @classmethod

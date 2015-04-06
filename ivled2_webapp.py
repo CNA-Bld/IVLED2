@@ -196,7 +196,7 @@ def dropbox_update_folder():
 
 # Target: Google Drive
 def get_google_auth_flow():
-    redirect_uri = url_for('auth_google_callback', _external=True, _scheme='http')
+    redirect_uri = url_for('auth_google_callback', _external=True, _scheme='https')
     return OAuth2WebServerFlow(config.GOOGLE_CLIENT_ID, config.GOOGLE_CLIENT_SECRET, config.GOOGLE_OAUTH_SCOPE, redirect_uri=redirect_uri)
 
 

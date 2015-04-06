@@ -74,6 +74,7 @@ def settings_submit():
             user.acquire_lock()
             user.enabled = bool(request.form.get('sync_enabled', ''))
             user.uploadable_folder = bool(request.form.get('uploadable_folder', ''))
+            user.email = request.form.get('email', user.email)
             user.update()
             user.release_lock()
             return json.dumps({'result': True})

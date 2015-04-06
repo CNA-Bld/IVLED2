@@ -28,6 +28,15 @@ class User():
         self.update()
         self.release_lock()
 
+    def unauth_target(self, clear_synced_files=True):
+        self.acquire_lock()
+        self.target = None
+        self.target_settings = {}
+        if clear_synced_files:
+            self.synced_files = []
+        self.update()
+        self.release_lock()
+
     def to_dict(self):
         return self.__dict__
 

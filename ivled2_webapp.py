@@ -147,11 +147,7 @@ def auth_dropbox_unauth():
     if 'user_id' not in session or session['user_id'] == '':
         return redirect(url_for('login'))
     user = models.User(session['user_id'])
-    user.acquire_lock()
-    user.target = None
-    user.target_settings = {}
-    user.update()
-    user.release_lock()
+    user.unauth_target()
     flash('Successfully logged out from Dropbox.', 'warning')
     return redirect(url_for('dashboard'))
 

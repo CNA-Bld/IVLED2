@@ -129,7 +129,7 @@
         </div>
         <div class="modal-footer">
             <button type="button" data-dismiss="modal" class="btn btn-default">Cancel</button>
-            <a class="btn btn-danger" href="{% if target == 'dropbox' %}{{ url_for('auth_dropbox_unauth') }}{% endif %}" role="button">Logout</a>
+            <a class="btn btn-danger" href="{% if target == 'dropbox' %}{{ url_for('auth_dropbox_unauth') }}{% elif target == 'google' %}{{ url_for('auth_google_unauth') }}{% endif %}" role="button">Logout</a>
         </div>
     </div>
 
@@ -165,14 +165,24 @@
                         <a class="btn btn-danger" href="#unauthModal" data-toggle="modal" role="button">Logout</a>
                     </span>
                 </div>
-            {% elif target == 'onedrive' %}
-                Nothing here.
+            {% elif target == 'google' %}
+                <div class="input-group">
+                    <span class="input-group-btn">
+                        <span class="btn btn-social-icon btn-google-plus"><i class="fa fa-google"></i></span>
+                        <button class="btn btn-default" type="button" id="modifyFolder">Set Folder</button>
+                    </span>
+                    <input type="text" class="form-control" id="textFolder"
+                           value="{{ target_settings.folder or 'Unknown / Not Set' }}" disabled>
+                    <span class="input-group-btn">
+                        <a class="btn btn-danger" href="#unauthModal" data-toggle="modal" role="button">Logout</a>
+                    </span>
+                </div>
             {% else %}
                 <a class="btn btn-social btn-dropbox" href="{{ url_for('auth_dropbox') }}">
                     <i class="fa fa-dropbox"></i> Dropbox
                 </a>
                 <a class="btn btn-social btn-google-plus" href="{{ url_for('auth_google') }}">
-                    <i class="fa fa-google"></i> Google Drive (Not implemented)
+                    <i class="fa fa-google"></i> Google Drive
                 </a>
                 <a class="btn btn-social btn-microsoft" href="{{ url_for('auth_onedrive') }}">
                     <i class="fa fa-windows"></i> OneDrive (Not implemented)

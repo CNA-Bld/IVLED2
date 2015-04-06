@@ -5,6 +5,7 @@ import json
 
 from api import ivle
 import dropbox
+from oauth2client.client import OAuth2WebServerFlow
 
 import models
 import drivers
@@ -92,7 +93,6 @@ def settings_submit():
         return json.dumps({'result': False, 'message': e.message})
 
 
-
 # Target: Dropbox
 
 def get_dropbox_auth_flow():
@@ -137,7 +137,8 @@ def auth_dropbox_callback():
         flash('Successfully logged in to Dropbox as %s' % dropbox.client.DropboxClient(user.target_settings['token']).account_info()['display_name'], 'info')
     else:
         user.target_settings['token'] = access_token
-        flash('Successfully refreshed token for Dropbox user %s' % dropbox.client.DropboxClient(user.target_settings['token']).account_info()['display_name'], 'info')
+        flash('Successfully refreshed token for Dropbox user %s' % dropbox.client.DropboxClient(user.target_settings['token']).account_info()['display_name'],
+              'info')
     user.update()
     user.release_lock()
     return redirect(url_for('dashboard'))
@@ -194,9 +195,58 @@ def dropbox_update_folder():
 
 
 # Target: Google Drive
+def get_google_auth_flow():
+    redirect_uri = url_for('auth_google_callback', _external=True, _scheme='http')
+    return OAuth2WebServerFlow(config.GOOGLE_CLIENT_ID, config.GOOGLE_CLIENT_SECRET, config.GOOGLE_OAUTH_SCOPE, redirect_uri=redirect_uri)
+
+
 @app.route("/auth/google/")
 def auth_google():
-    return ''
+    if 'user_id' not in session or session['user_id'] == '':
+        return redirect(url_for('login'))
+    user = models.User(session['user_id'])
+    redirect_uri = get_google_auth_flow().step1_get_authorize_url()
+    return redirect(redirect_uri)
+
+
+@app.route("/auth/google/callback/")
+def auth_google_callback():
+    if 'user_id' not in session or session['user_id'] == '':
+        return redirect(url_for('login'))
+    user = models.User(session['user_id'])
+    code = request.args.get('code', '')
+    error = request.args.get('error', '')
+    if error:
+        flash(error, 'warning')
+        return redirect(url_for('dashboard'))
+    try:
+        credentials = get_google_auth_flow().step2_exchange(code)
+        if credentials.invalid:
+            flash('Credential Invalid.', 'warning')
+            return redirect(url_for('dashboard'))
+    except Exception as e:
+        flash(str(e), 'warning')
+        return redirect(url_for('dashboard'))
+    user.acquire_lock()
+    if user.target != 'google':
+        user.target = 'google'
+        user.target_settings = {'credentials': credentials.to_json()}
+    else:
+        user.target_settings['credentials'] = credentials.to_json()
+    user.update()
+    user.release_lock()
+    flash('Finished.', 'info')
+    return redirect(url_for('dashboard'))
+
+
+@app.route("/auth/google/logout/")
+def auth_google_unauth():
+    if 'user_id' not in session or session['user_id'] == '':
+        return redirect(url_for('login'))
+    user = models.User(session['user_id'])
+    user.unauth_target()
+    flash('Successfully logged out from Google Drive.', 'warning')
+    return redirect(url_for('dashboard'))
 
 
 # End of Google Drive

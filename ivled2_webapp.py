@@ -158,7 +158,10 @@ def auth_dropbox_unauth():
 
 @app.route("/internal/dropbox/folder/")
 def dropbox_folder():
-    user = models.User(request.args.get('user_id', ''))
+    user_id = request.args.get('user_id', '')
+    if not user_id:
+        return "Unauthorized!", 403  # TODO
+    user = models.User(user_id)
     if request.args.get('key', '') != user.key:
         return "Unauthorized!", 403  # TODO
     dropbox_client = dropbox.client.DropboxClient(user.target_settings['token'])

@@ -155,7 +155,7 @@ hr.small {
     position: relative;
     width: 100%;
     height: 100%;
-    background: url(../img/bg2.png) no-repeat center center scroll;
+    background: url(../img/Real-rainbow.jpg) no-repeat center center scroll;
     -webkit-background-size: cover;
     -moz-background-size: cover;
     background-size: cover;
@@ -165,26 +165,28 @@ hr.small {
     background: url(../img/logo2.png) no-repeat center center scroll;
     width: 100%;
     height: 30%;
-    margin-top: 5%;
+    margin-top: 10%;
 }
 
 .word {
-    margin-top: 15%;
-    color: #D0D0D0;
+    margin-top: 10%;
+    color: #fbfdfa;
 }
 
 /* About */
 
 .about {
     padding: 50px 0;
-    background: url(../img/back1.jpg) repeat;
+    /*background: url(../img/back1.jpg) repeat;*/
+    background-color: #f2feee;
 }
 
 /* Services */
 
 .services {
     padding: 50px 0;
-    background: url(../img/back2.jpg) repeat;
+    /*background: url(../img/back2.jpg) repeat;*/
+    background-color: #15b26d;
     color: #F0F0F0;
 }
 
@@ -199,7 +201,8 @@ hr.small {
     width: 100%;
     height: 400px;
     color: #fff;
-    background: url(../img/callout.jpg) no-repeat center center scroll;
+    /*background: url(../img/callout.jpg) no-repeat center center scroll;*/
+    background-color: #f5f7d9;
     -webkit-background-size: cover;
     -moz-background-size: cover;
     background-size: cover;
@@ -210,7 +213,8 @@ hr.small {
 
 .portfolio {
     padding: 50px 0;
-    background: url(../img/back3.jpg) repeat;
+    /*background: url(../img/back3.jpg) repeat;*/
+    background-color: #99cfb7;
     color: #F0F0F0;
 }
 
@@ -230,7 +234,8 @@ hr.small {
 
 .call-to-action {
     padding: 50px 0;
-    background: url(../img/back4.jpg) repeat;
+    /*background: url(../img/back4.jpg) repeat;*/
+    background-color: #d5e9ce;
 }
 
 .call-to-action .btn {

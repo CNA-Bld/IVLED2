@@ -1,5 +1,6 @@
 import requests
 import utils.misc
+from titlecase import titlecase
 
 from config import IVLE_APIKEY, SERVER_PATH
 
@@ -23,6 +24,8 @@ def get_modules_list(user):
     modules_list = []
     for module in request.json()['Results']:
         modules_list.append({x: module[x] for x in ['CourseCode', 'ID', 'CourseName']})
+    for module in modules_list:
+        module['CourseName'] = titlecase(module['CourseName'])
     return modules_list
 
 

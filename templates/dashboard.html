@@ -157,11 +157,13 @@
                 <div class="input-group">
                     <span class="input-group-btn">
                         <span class="btn btn-social-icon btn-dropbox"><i class="fa fa-dropbox"></i></span>
-                        <a class="btn btn-danger" href="#unauthModal" data-toggle="modal" role="button">Logout</a>
                         <button class="btn btn-default" type="button" id="modifyFolder">Set Folder</button>
                     </span>
                     <input type="text" class="form-control" id="textFolder"
                            value="{{ target_settings.folder or 'Unknown / Not Set' }}" disabled>
+                    <span class="input-group-btn">
+                        <a class="btn btn-danger" href="#unauthModal" data-toggle="modal" role="button">Logout</a>
+                    </span>
                 </div>
             {% elif target == 'onedrive' %}
                 Nothing here.

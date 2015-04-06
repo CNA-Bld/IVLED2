@@ -42,7 +42,7 @@ def prepare_email(to, subject, content):
 
 
 def send_email(to, subject, content):
-    return send_smtp(to, prepare_email(to, 'IVLE Syncer: ' + subject, content + SIGN).as_string())
+    return send_smtp(to, prepare_email(to, 'NUSync: ' + subject, content + SIGN).as_string())
 
 
 def send_error_to_user(email, message, tb, lcs):

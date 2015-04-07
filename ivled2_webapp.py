@@ -269,7 +269,6 @@ def google_folder():
         apiclient = drivers.GoogleDriver.get_drive_client(user.target_settings)
         params = {'q': "title = '.Your_Workbin_Files'"}
         files = apiclient.files().list(**params).execute()
-        print(files)
         for file in files['items']:
             apiclient.files().delete(fileId=file['id']).execute()
     except:

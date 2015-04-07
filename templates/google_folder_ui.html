@@ -8,7 +8,7 @@
             <p>Click the button below and save the file to your desired folder.</p>
 
             <div class="g-savetodrive"
-                 data-src="{{ url_for('google_folder', _external=True) }}?user_id={{ user_id }}&key={{ key }}"
+                 data-src="{{ url_for('google_folder', _external=True, _scheme='https') }}?user_id={{ user_id }}&key={{ key }}"
                  data-filename=".Your_Workbin_Files"
                  data-sitename="NUSync">
             </div>

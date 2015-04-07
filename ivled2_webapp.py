@@ -273,7 +273,7 @@ def google_folder():
             apiclient.files().delete(fileId=file['id']).execute()
     except:
         pass
-    return ""
+    return "0"
 
 
 @app.route("/internal/google/update_folder/")

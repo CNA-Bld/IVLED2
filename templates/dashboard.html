@@ -116,7 +116,7 @@
 
             var gdriveCallback = function () {
                 $.get("{{ url_for('google_get_folder') }}", function (data, status) {
-                    $.bootstrapGrowl("Your folder is now set to ".concat(errorMessage), {
+                    $.bootstrapGrowl("Your folder is now set to ".concat(data), {
                         type: 'info'
                     });
                     $('#textFolder').val(data);

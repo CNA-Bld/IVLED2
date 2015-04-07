@@ -230,7 +230,7 @@ def auth_google_callback():
     user.acquire_lock()
     if user.target != 'google':
         user.target = 'google'
-        user.target_settings = {'credentials': credentials.to_json()}
+        user.target_settings = {'credentials': credentials.to_json(), 'parent_id': ''}
     else:
         user.target_settings['credentials'] = credentials.to_json()
     user.update()
@@ -247,6 +247,64 @@ def auth_google_unauth():
     user.unauth_target()
     flash('Successfully logged out from Google Drive.', 'warning')
     return redirect(url_for('dashboard'))
+
+
+@app.route("/internal/google/folder_ui/")
+def google_folder_ui():
+    if 'user_id' not in session or session['user_id'] == '':
+        return redirect(url_for('login'))
+    user = models.User(session['user_id'])
+    return render_template('google_folder_ui.html', user_id=user.user_id, key=user.key)
+
+
+@app.route("/internal/google/folder/")
+def google_folder():
+    user_id = request.args.get('user_id', '')
+    if not user_id:
+        return "Unauthorized!", 403  # TODO
+    user = models.User(user_id)
+    if request.args.get('key', '') != user.key:
+        return "Unauthorized!", 403  # TODO
+    try:
+        apiclient = drivers.GoogleDriver.get_drive_client(user.target_settings)
+        params = {'q': "title = '.Your_Workbin_Files'"}
+        files = apiclient.files().list(**params).execute()
+        print(files)
+        for file in files['items']:
+            apiclient.files().delete(fileId=file['id']).execute()
+    except:
+        pass
+    return ""
+
+
+@app.route("/internal/google/update_folder/")
+def google_update_folder():
+    if 'user_id' not in session or session['user_id'] == '':
+        return redirect(url_for('login'))
+    user = models.User(session['user_id'])
+    apiclient = drivers.GoogleDriver.get_drive_client(user.target_settings)
+    params = {'q': "title = '.Your_Workbin_Files'"}
+    files = apiclient.files().list(**params).execute()
+    if len(files['items']) > 0:
+        user.acquire_lock()
+        user.target_settings['parent_id'] = files['items'][0]['parents'][0]['id']
+        user.update()
+        user.release_lock()
+        apiclient.files().delete(fileId=files['items'][0]['id']).execute()
+    else:
+        pass  # TODO
+    return ''
+
+@app.route("/internal/google/get_folder/")
+def google_get_folder():
+    if 'user_id' not in session or session['user_id'] == '':
+        return redirect(url_for('login'))
+    user = models.User(session['user_id'])
+    if user.target_settings['credentials'] and user.target_settings['parent_id']:
+        apiclient = drivers.GoogleDriver.get_drive_client(user.target_settings)
+        return drivers.GoogleDriver.get_folder_name(apiclient, user.target_settings['parent_id'])
+    else:
+        return 'Unknown / Not Set'
 
 
 # End of Google Drive

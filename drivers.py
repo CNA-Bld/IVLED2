@@ -1,4 +1,7 @@
 import dropbox
+import httplib2
+from oauth2client import client
+import apiclient
 from api import ivle
 
 
@@ -91,6 +94,20 @@ class GoogleDriver(BaseDriver):
     @classmethod
     def transport_file(cls, user_settings, file_url, target_path):
         return True
+
+    @classmethod
+    def get_drive_client(cls, user_settings):
+        if not user_settings['credentials']:
+            raise SyncException("You are not logged in to Google Drive or your token is expired. Please re-login on the webpage.", retry=True, send_email=True,
+                                    disable_user=True, logout_user=True)
+        credentials = client.OAuth2Credentials.from_json(user_settings['credentials'])
+        http_auth = credentials.authorize(httplib2.Http())
+        return apiclient.discovery.build('drive', 'v2', http_auth)
+
+    @classmethod
+    def get_folder_name(cls, service, folder_id):
+        file = service.files().get(fileId=folder_id).execute()
+        return file['title']
 
 
 drivers = {'dropbox': DropboxDriver, '': NullDriver, None: NullDriver}

@@ -16,6 +16,10 @@
 
     {% if target == 'dropbox' %}
         <script type="text/javascript" src="https://www.dropbox.com/static/api/2/dropins.js" id="dropboxjs" data-app-key="uu5mhej80smc1vp"></script>
+    {% elif target == 'google' %}
+        <script src="https://apis.google.com/js/platform.js" async defer>{
+            parsetags: 'explicit'
+        }</script>
     {% endif %}
 
     <script>
@@ -101,14 +105,33 @@
                 };
                 Dropbox.save(options);
             });
+        {% elif target == 'google' %}
+            $('#modifyFolder').on('click', function () {
+                $('body').modalmanager('loading');
+
+                $modal.load('{{ url_for('google_folder_ui') }}', '', function () {
+                    $modal.modal();
+                });
+            });
+
+            var gdriveCallback = function () {
+                $.get("{{ url_for('google_get_folder') }}", function (data, status) {
+                    $.bootstrapGrowl("Your folder is now set to ".concat(errorMessage), {
+                        type: 'info'
+                    });
+                    $('#textFolder').val(data);
+                });
+            };
+
+            $(function () {
+                $.get("{{ url_for('google_get_folder') }}", function (data, status) {
+                    $('#textFolder').val(data);
+                });
+            });
         {% endif %}
 
     </script>
 
-    {% if dropbox_auth %}
-        <script type="text/javascript" src="https://www.dropbox.com/static/api/1/dropins.js" id="dropboxjs"
-                data-app-key="{{ DROPBOX_APPKEY }}"></script>
-    {% endif %}
 {% endblock %}
 
 {% block main_body %}
@@ -129,7 +152,9 @@
         </div>
         <div class="modal-footer">
             <button type="button" data-dismiss="modal" class="btn btn-default">Cancel</button>
-            <a class="btn btn-danger" href="{% if target == 'dropbox' %}{{ url_for('auth_dropbox_unauth') }}{% elif target == 'google' %}{{ url_for('auth_google_unauth') }}{% endif %}" role="button">Logout</a>
+            <a class="btn btn-danger" href="
+                    {% if target == 'dropbox' %}{{ url_for('auth_dropbox_unauth') }}{% elif target == 'google' %}{{ url_for('auth_google_unauth') }}{% endif %}"
+               role="button">Logout</a>
         </div>
     </div>
 
@@ -171,8 +196,7 @@
                         <span class="btn btn-social-icon btn-google-plus"><i class="fa fa-google"></i></span>
                         <button class="btn btn-default" type="button" id="modifyFolder">Set Folder</button>
                     </span>
-                    <input type="text" class="form-control" id="textFolder"
-                           value="{{ target_settings.folder or 'Unknown / Not Set' }}" disabled>
+                    <input type="text" class="form-control" id="textFolder" value="Loading..." disabled>
                     <span class="input-group-btn">
                         <a class="btn btn-danger" href="#unauthModal" data-toggle="modal" role="button">Logout</a>
                     </span>

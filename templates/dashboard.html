@@ -79,25 +79,17 @@
 
         {% if target %}
             $('#logoutButton').click(function () {
-                BootstrapDialog.show({
-                    title: 'Confirm?',
-                    message: 'Very Dangerous!',
+                BootstrapDialog.confirm({
+                    title: 'Confirm Logging Out?',
+                    message: 'Warning!',
                     type: BootstrapDialog.TYPE_DANGER,
-                    buttons: [
-                        {
-                            label: 'Close',
-                            action: function (dialog) {
-                                dialog.close();
-                            }
-                        },
-                        {
-                            label: 'Confirm',
-                            cssClass: 'btn-danger',
-                            action: function (dialog) {
-                                window.location.href = '{{ url_for('auth_'+target+'_unauth') }}';
-                            }
+                    closable: true,
+                    btnOKLabel: 'Confirm Logout',
+                    callback: function (result) {
+                        if (result) {
+                            document.location.href = "{{ url_for('auth_'+target+'_unauth') }}";
                         }
-                    ]
+                    }
                 });
             });
         {% endif %}

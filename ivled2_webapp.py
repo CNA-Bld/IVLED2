@@ -84,10 +84,11 @@ def settings_submit():
             user.enabled = False
             user.update()
             user.release_lock()
-            return json.dumps({'result': False})
+            return json.dumps({'result': False, 'message': 'An unknown error happened. Please refresh the page and try again.'})
     except drivers.SyncException as e:
         user.acquire_lock()
         user.enabled = False
+        user.email = request.form.get('email', user.email)
         user.update()
         user.release_lock()
         return json.dumps({'result': False, 'message': e.message})

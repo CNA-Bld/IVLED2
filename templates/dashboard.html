@@ -115,17 +115,23 @@
             });
 
             var gdriveCallback = function () {
-                $.get("{{ url_for('google_get_folder') }}", function (data, status) {
-                    $.bootstrapGrowl("Your folder is now set to ".concat(data), {
-                        type: 'info'
-                    });
-                    $('#textFolder').val(data);
+                $.getJSON("{{ url_for('google_get_folder') }}", function (data, status) {
+                    if (data.result) {
+                        $.bootstrapGrowl("Your folder is now set to ".concat(data.path), {
+                            type: 'info'
+                        });
+                        $('#textFolder').val(data.path);
+                    } else {
+                        $.bootstrapGrowl("Something went wrong: ".concat(data.info), {
+                            type: 'warning'
+                        });
+                    }
                 });
             };
 
             $(function () {
-                $.get("{{ url_for('google_get_folder') }}", function (data, status) {
-                    $('#textFolder').val(data);
+                $.getJSON("{{ url_for('google_get_folder') }}", function (data, status) {
+                    $('#textFolder').val(data.path);
                 });
             });
         {% endif %}

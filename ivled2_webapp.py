@@ -294,16 +294,21 @@ def google_update_folder():
         pass  # TODO
     return ''
 
+
 @app.route("/internal/google/get_folder/")
 def google_get_folder():
     if 'user_id' not in session or session['user_id'] == '':
         return redirect(url_for('login'))
     user = models.User(session['user_id'])
     if user.target_settings['credentials'] and user.target_settings['parent_id']:
-        apiclient = drivers.GoogleDriver.get_drive_client(user.target_settings)
-        return drivers.GoogleDriver.get_folder_name(apiclient, user.target_settings['parent_id'])
+        try:
+            apiclient = drivers.GoogleDriver.get_drive_client(user.target_settings)
+            result = {'result': True, 'path': drivers.GoogleDriver.get_folder_name(apiclient, user.target_settings['parent_id'])}
+        except Exception as e:
+            result = {'result': False, 'info': 'Error: ' + str(e)}
     else:
-        return 'Unknown / Not Set'
+        result = {'result': False, 'info': 'Unknown / Not Set'}
+    return json.dumps(result)
 
 
 # End of Google Drive

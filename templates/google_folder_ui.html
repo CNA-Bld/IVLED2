@@ -1,31 +1,18 @@
 <form role="form" method="GET" action="{{ url_for('google_update_folder') }}" id="googleFolderForm">
-    <div class="modal-content">
-        <div class="modal-header">
-            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-            <h4>Change Target Folder for Google Drive</h4>
-        </div>
-        <div class="modal-body">
-            <p>Click the button below and save the file to your desired folder.</p>
+    <p>Click the button below and save the file to your desired folder.</p>
 
-            <div class="g-savetodrive"
-                 data-src="{{ url_for('google_folder', _external=True, _scheme='https') }}?user_id={{ user_id }}&key={{ key }}"
-                 data-filename=".Your_Workbin_Files"
-                 data-sitename="NUSync">
-            </div>
-            <p>And click submit below to let us look for it.</p>
-        </div>
-        <div class="modal-footer">
-            <button type="button" data-dismiss="modal" class="btn btn-default">Close</button>
-            <button type="submit" class="btn btn-primary">Submit</button>
-        </div>
+    <div class="g-savetodrive"
+         data-src="{{ url_for('google_folder', _external=True, _scheme='https') }}?user_id={{ user_id }}&key={{ key }}"
+         data-filename=".Your_Workbin_Files"
+         data-sitename="NUSync">
     </div>
+    <p>And click submit below to let us look for it.</p>
 </form>
 
 <script>
     $(function () {
         gapi.savetodrive.go('googleFolderForm');
         $('#googleFolderForm').ajaxForm(function () {
-            $('#ajaxModal').modal('hide');
             gdriveCallback();
         });
     });

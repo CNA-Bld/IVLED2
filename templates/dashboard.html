@@ -1,16 +1,13 @@
 {% extends "base.html" %}
 
 {% block additional_css %}
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-modal/2.2.5/css/bootstrap-modal-bs3patch.css"
-          rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-modal/2.2.5/css/bootstrap-modal.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap3-dialog/1.34.3/css/bootstrap-dialog.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-switch/3.3.2/css/bootstrap3/bootstrap-switch.min.css" rel="stylesheet">
     <link href="/static/css/bootstrap-social.css" rel="stylesheet">
 {% endblock %}
 
 {% block additional_js %}
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-modal/2.2.5/js/bootstrap-modal.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-modal/2.2.5/js/bootstrap-modalmanager.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap3-dialog/1.34.3/js/bootstrap-dialog.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-switch/3.3.2/js/bootstrap-switch.min.js"></script>
     <script src="/static/js/jquery.form.js"></script>
 
@@ -24,21 +21,35 @@
 
     <script>
 
-        $.fn.modal.defaults.spinner = $.fn.modalmanager.defaults.spinner =
-                '<div class="loading-spinner" style="width: 200px; margin-left: -100px;">' +
-                '<div class="progress progress-striped active">' +
-                '<div class="progress-bar" style="width: 100%;"></div>' +
-                '</div>' +
-                '</div>';
-        $.fn.modalmanager.defaults.resize = true;
-
-        var $modal = $('#ajaxModal');
-
         $('#modifyModules').on('click', function () {
-            $('body').modalmanager('loading');
+            BootstrapDialog.show({
+                title: 'Modules Selection',
+                message: function (dialog) {
+                    var $message = $('<div>Loading...</div>');
+                    var pageToLoad = dialog.getData('pageToLoad');
+                    $message.load(pageToLoad);
 
-            $modal.load('{{ url_for('modules') }}', '', function () {
-                $modal.modal();
+                    return $message;
+                },
+                data: {
+                    'pageToLoad': '{{ url_for('modules') }}'
+                },
+                buttons: [
+                    {
+                        label: 'Close',
+                        action: function (dialogItself) {
+                            dialogItself.close();
+                        }
+                    },
+                    {
+                        label: 'Submit',
+                        cssClass: 'btn-primary',
+                        action: function (dialogItself) {
+                            $("#moduleForm").submit();
+                            dialogItself.close();
+                        }
+                    },
+                ]
             });
         });
 
@@ -65,6 +76,31 @@
                     });
             }
         });
+
+        {% if target %}
+            $('#logoutButton').click(function () {
+                BootstrapDialog.show({
+                    title: 'Confirm?',
+                    message: 'Very Dangerous!',
+                    type: BootstrapDialog.TYPE_DANGER,
+                    buttons: [
+                        {
+                            label: 'Close',
+                            action: function (dialog) {
+                                dialog.close();
+                            }
+                        },
+                        {
+                            label: 'Confirm',
+                            cssClass: 'btn-danger',
+                            action: function (dialog) {
+                                window.location.href = '{{ url_for('auth_'+target+'_unauth') }}';
+                            }
+                        }
+                    ]
+                });
+            });
+        {% endif %}
 
         {% if target == 'dropbox' %}
             $('#modifyFolder').on('click', function () {
@@ -107,10 +143,34 @@
             });
         {% elif target == 'google' %}
             $('#modifyFolder').on('click', function () {
-                $('body').modalmanager('loading');
+                BootstrapDialog.show({
+                    title: 'Folder Selection for Google Drive',
+                    message: function (dialog) {
+                        var $message = $('<div>Loading...</div>');
+                        var pageToLoad = dialog.getData('pageToLoad');
+                        $message.load(pageToLoad);
 
-                $modal.load('{{ url_for('google_folder_ui') }}', '', function () {
-                    $modal.modal();
+                        return $message;
+                    },
+                    data: {
+                        'pageToLoad': '{{ url_for('google_folder_ui') }}'
+                    },
+                    buttons: [
+                        {
+                            label: 'Close',
+                            action: function (dialogItself) {
+                                dialogItself.close();
+                            }
+                        },
+                        {
+                            label: 'Submit',
+                            cssClass: 'btn-primary',
+                            action: function (dialogItself) {
+                                $("#googleFolderForm").submit();
+                                dialogItself.close();
+                            }
+                        },
+                    ]
                 });
             });
 
@@ -131,7 +191,10 @@
 
             $(function () {
                 $.getJSON("{{ url_for('google_get_folder') }}", function (data, status) {
-                    $('#textFolder').val(data.path);
+                    if (data.result)
+                        $('#textFolder').val(data.path);
+                    else
+                        $('#textFolder').val(data.info);
                 });
             });
         {% endif %}
@@ -193,7 +256,7 @@
                     <input type="text" class="form-control" id="textFolder"
                            value="{{ target_settings.folder or 'Unknown / Not Set' }}" disabled>
                     <span class="input-group-btn">
-                        <a class="btn btn-danger" href="#unauthModal" data-toggle="modal" role="button">Logout</a>
+                        <button class="btn btn-danger" type="button" id="logoutButton">Logout</button>
                     </span>
                 </div>
             {% elif target == 'google' %}
@@ -204,7 +267,7 @@
                     </span>
                     <input type="text" class="form-control" id="textFolder" value="Loading..." disabled>
                     <span class="input-group-btn">
-                        <a class="btn btn-danger" href="#unauthModal" data-toggle="modal" role="button">Logout</a>
+                        <button class="btn btn-danger" type="button" id="logoutButton">Logout</button>
                     </span>
                 </div>
             {% else %}
@@ -212,11 +275,11 @@
                     <i class="fa fa-dropbox"></i> Dropbox
                 </a>
                 <a class="btn btn-social btn-google-plus" href="{{ url_for('auth_google') }}">
-                    <i class="fa fa-google"></i> Google Drive
+                    <i class="fa fa-google"></i> Google Drive (Beta)
                 </a>
-                <a class="btn btn-social btn-microsoft" href="{{ url_for('auth_onedrive') }}">
+                <!--<a class="btn btn-social btn-microsoft" href="{{ url_for('auth_onedrive') }}">
                     <i class="fa fa-windows"></i> OneDrive (Not implemented)
-                </a>
+                </a>-->
             {% endif %}
         </div>
     </div>
@@ -259,8 +322,5 @@
             </form>
         </div>
     </div>
-
-
-    <div id="ajaxModal" class="modal fade" tabindex="-1" role="dialog" style="display: none;"></div>
 
 {% endblock %}

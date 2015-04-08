@@ -1,31 +1,19 @@
 <form role="form" method="POST" action="{{ url_for('modules_submit') }}" id="moduleForm">
-    <div class="modal-content">
-        <div class="modal-header">
-            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-            <h4>Select Modules</h4>
+    <div>
+        {% for module in modules %}
+            <label>
+                <input type="checkbox" class="module-checkbox" name="{{ module.CourseCode }}|{{ module.ID }}"
+                       {% if module.CourseCode in selected_modules %}checked="checked"{% endif %} data-size="mini">
+                {{ module.CourseCode }} {{ module.CourseName }}
+            </label>
+        {% endfor %}
+    </div>
+    <div class="btn-group btn-group-justified" role="group">
+        <div class="btn-group" role="group">
+            <button type="button" class="btn btn-default btn-sm" id="enableAll">Enable All</button>
         </div>
-        <div class="modal-body">
-            <div>
-                {% for module in modules %}
-                    <label>
-                        <input type="checkbox" class="module-checkbox" name="{{ module.CourseCode }}|{{ module.ID }}"
-                               {% if module.CourseCode in selected_modules %}checked="checked"{% endif %} data-size="mini">
-                        {{ module.CourseCode }} {{ module.CourseName }}
-                    </label>
-                {% endfor %}
-            </div>
-            <div class="btn-group btn-group-justified" role="group">
-                <div class="btn-group" role="group">
-                    <button type="button" class="btn btn-default btn-sm" id="enableAll">Enable All</button>
-                </div>
-                <div class="btn-group" role="group">
-                    <button type="button" class="btn btn-default btn-sm" id="disableAll">Disable All</button>
-                </div>
-            </div>
-        </div>
-        <div class="modal-footer">
-            <button type="button" data-dismiss="modal" class="btn btn-default">Close</button>
-            <button type="submit" class="btn btn-primary">Submit</button>
+        <div class="btn-group" role="group">
+            <button type="button" class="btn btn-default btn-sm" id="disableAll">Disable All</button>
         </div>
     </div>
 </form>
@@ -34,7 +22,6 @@
     $(function () {
         $(".module-checkbox").bootstrapSwitch();
         $('#moduleForm').ajaxForm(function () {
-            $('#ajaxModal').modal('hide');
             modulesCallback();
         });
         $('#enableAll').click(function () {

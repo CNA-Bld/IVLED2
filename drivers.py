@@ -102,7 +102,7 @@ class GoogleDriver(BaseDriver):
                                     disable_user=True, logout_user=True)
         credentials = client.OAuth2Credentials.from_json(user_settings['credentials'])
         http_auth = credentials.authorize(httplib2.Http())
-        return apiclient.discovery.build('drive', 'v2', http_auth)
+        return apiclient.discovery.build('drive', 'v2', http=http_auth)
 
     @classmethod
     def get_folder_name(cls, service, folder_id):

@@ -34,6 +34,7 @@ class User():
         self.target_settings = {}
         if clear_synced_files:
             self.synced_files = []
+        self.enabled = False
         self.update()
         self.release_lock()
 

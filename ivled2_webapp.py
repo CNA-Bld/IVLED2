@@ -217,7 +217,7 @@ def auth_google_callback():
     code = request.args.get('code', '')
     error = request.args.get('error', '')
     if error:
-        flash(error, 'warning')
+        flash('Error: '+error, 'warning')
         return redirect(url_for('dashboard'))
     try:
         credentials = get_google_auth_flow().step2_exchange(code)
@@ -225,7 +225,7 @@ def auth_google_callback():
             flash('Credential Invalid.', 'warning')
             return redirect(url_for('dashboard'))
     except Exception as e:
-        flash(str(e), 'warning')
+        flash('Error: '+str(e), 'warning')
         return redirect(url_for('dashboard'))
     user.acquire_lock()
     if user.target != 'google':

@@ -13,13 +13,17 @@ user_queue = rq.Queue('user', connection=db.r)
 file_queue = rq.Queue('file', connection=db.r)
 
 
+def queue_metajob():
+    user_queue.enqueue_call(func=queue_all_user, job_id='METAJOB')
+
+
 def queue_all_user():
     for user_name in db.get_users():
         user_name = user_name.decode("utf-8")
         if models.User(user_name).enabled and (not user_queue.fetch_job(user_name) or user_queue.fetch_job(user_name).status == 'finished'):
             user_queue.enqueue_call(func=do_user, args=(user_name,), job_id=user_name)
+    queue_metajob()
     time.sleep(60)  # TODO: Temporary hard code here
-    user_queue.enqueue_call(func=queue_all_user, job_id='METAJOB')
 
 
 def do_user(user_name):

@@ -37,6 +37,8 @@ def do_user(user_name):
             user.update()
         if e.send_email:
             mail.send_error_to_user(user.email, e.message, traceback.format_exc(), locals())
+        else:
+            mail.send_error_to_admin(traceback.format_exc(), locals())
         return
     except Exception as e:
         mail.send_error_to_admin(traceback.format_exc(), locals())  # TODO
@@ -75,24 +77,6 @@ def do_file(user_name, file_id, file_path):
         user.acquire_lock()
         if not (user.enabled and drivers[user.target].check_settings(user.target_settings)):
             return  # TODO
-    except SyncException as e:
-        if e.disable_user:
-            user.enabled = False
-            user.update()
-        if e.logout_user:
-            user.target = None
-            user.update()
-        if e.send_email:
-            mail.send_error_to_user(user.email, e.message, traceback.format_exc(), locals())
-        return
-    except Exception as e:
-        mail.send_error_to_admin(traceback.format_exc(), locals())
-        pass  # TODO: Inform admin
-    finally:
-        user.release_lock()
-
-    try:
-        user.acquire_lock()
         drivers[user.target].transport_file(user.target_settings, url, file_path)
         user.synced_files.append(file_id)
         user.update()
@@ -102,6 +86,8 @@ def do_file(user_name, file_id, file_path):
             user.update()
         if e.send_email:
             mail.send_error_to_user(user.email, e.message, traceback.format_exc(), locals())
+        else:
+            mail.send_error_to_admin(traceback.format_exc(), locals())
         if e.disable_user:
             user.enabled = False
             user.update()

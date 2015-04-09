@@ -32,7 +32,7 @@ class User():
     def unauth_target(self, clear_synced_files=True):
         with self.lock:
             self.sync_from_db()
-            self.last_target = self.target
+            self.last_target = None  # This should always be manually called by user so no need to save last_target
             self.target = None
             if clear_synced_files:
                 self.synced_files = []

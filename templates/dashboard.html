@@ -25,7 +25,7 @@
             BootstrapDialog.show({
                 title: 'Modules Selection',
                 message: function (dialog) {
-                    var $message = $('<div>Loading...</div>');
+                    var $message = $('<div><div class="progress"><div class="progress-bar progress-bar-striped active" role="progressbar" style="width: 100%">IVLE is Thinking...</div></div></div>');
                     var pageToLoad = dialog.getData('pageToLoad');
                     $message.load(pageToLoad);
 

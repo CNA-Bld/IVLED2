@@ -17,6 +17,7 @@ class User():
             self.enabled = False
             self.uploadable_folder = False
             self.target = None
+            self.last_target = None
             self.target_settings = {}
             self.synced_files = []
             self.key = ''.join(random.SystemRandom().choice(string.ascii_letters + string.digits) for _ in range(16))
@@ -30,8 +31,8 @@ class User():
 
     def unauth_target(self, clear_synced_files=True):
         self.acquire_lock()
+        self.last_target = self.target
         self.target = None
-        self.target_settings = {}
         if clear_synced_files:
             self.synced_files = []
         self.enabled = False

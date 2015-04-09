@@ -132,8 +132,8 @@ def auth_dropbox_callback():
         app.logger.exception("Auth error" + str(e))
         abort(403)
     user.acquire_lock()
-    if user.target != 'dropbox':
-        user.target = 'dropbox'
+    user.target = 'dropbox'
+    if user.last_target != 'dropbox':
         user.target_settings = {'token': access_token, 'folder': '', 'files_revision': {}}
         flash('Successfully logged in to Dropbox as %s' % dropbox.client.DropboxClient(user.target_settings['token']).account_info()['display_name'], 'info')
     else:
@@ -150,7 +150,7 @@ def auth_dropbox_unauth():
     if 'user_id' not in session or session['user_id'] == '':
         return redirect(url_for('login'))
     user = models.User(session['user_id'])
-    user.unauth_target()
+    user.unauth_target(True)
     flash('Successfully logged out from Dropbox.', 'warning')
     return redirect(url_for('dashboard'))
 
@@ -230,14 +230,15 @@ def auth_google_callback():
         flash('Error: ' + str(e), 'warning')
         return redirect(url_for('dashboard'))
     user.acquire_lock()
-    if user.target != 'google':
-        user.target = 'google'
+    user.target = 'google'
+    if user.last_target != 'google':
+        flash('Logged in to Google Drive.', 'info')
         user.target_settings = {'credentials': credentials.to_json(), 'parent_id': ''}
     else:
+        flash('Refreshed Google Drive token.', 'info')
         user.target_settings['credentials'] = credentials.to_json()
     user.update()
     user.release_lock()
-    flash('Finished.', 'info')
     return redirect(url_for('dashboard'))
 
 
@@ -246,7 +247,7 @@ def auth_google_unauth():
     if 'user_id' not in session or session['user_id'] == '':
         return redirect(url_for('login'))
     user = models.User(session['user_id'])
-    user.unauth_target()
+    user.unauth_target(True)
     flash('Successfully logged out from Google Drive.', 'warning')
     return redirect(url_for('dashboard'))
 

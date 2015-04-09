@@ -37,6 +37,7 @@ def do_user(user_name):
             user.enabled = False
             user.update()
         if e.logout_user:
+            user.last_target = user.target
             user.target = None
             user.update()
         if e.send_email:
@@ -96,6 +97,7 @@ def do_file(user_name, file_id, file_path):
             user.enabled = False
             user.update()
         if e.logout_user:
+            user.last_target = user.target
             user.target = None
             user.update()
         return
@@ -107,5 +109,3 @@ def do_file(user_name, file_id, file_path):
         return  # TODO: inform admin
     finally:
         user.release_lock()
-
-# queue_all_user()

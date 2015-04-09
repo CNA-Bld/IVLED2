@@ -4,6 +4,7 @@ from io import BytesIO
 from oauth2client import client
 import apiclient
 from api import ivle
+from utils.misc import get_mime_type
 
 
 class SyncException(Exception):
@@ -115,7 +116,7 @@ class GoogleDriver(BaseDriver):
         try:
             service = cls.get_drive_client(user_settings)
             path_id = cls.find_path(service, user_settings['parent_id'], target_path.split('/')[1:-1])
-            media_body = apiclient.http.MediaIoBaseUpload(BytesIO(ivle.get_file(file_url)), mimetype="application/octet-stream", resumable=True)
+            media_body = apiclient.http.MediaIoBaseUpload(BytesIO(ivle.get_file(file_url)), mimetype=get_mime_type(target_path), resumable=True)
             body = {'title': target_path[target_path.rfind('/') + 1:], 'parents': [{'id': path_id}]}
             file = service.files().insert(body=body, media_body=media_body).execute()
             return bool(file['id'])

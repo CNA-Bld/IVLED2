@@ -198,7 +198,8 @@ def dropbox_update_folder():
 # Target: Google Drive
 def get_google_auth_flow():
     redirect_uri = url_for('auth_google_callback', _external=True, _scheme='https')
-    return OAuth2WebServerFlow(config.GOOGLE_CLIENT_ID, config.GOOGLE_CLIENT_SECRET, config.GOOGLE_OAUTH_SCOPE, redirect_uri=redirect_uri)
+    return OAuth2WebServerFlow(config.GOOGLE_CLIENT_ID, config.GOOGLE_CLIENT_SECRET, config.GOOGLE_OAUTH_SCOPE, redirect_uri=redirect_uri,
+                               approval_prompt='force')
 
 
 @app.route("/auth/google/")
@@ -218,7 +219,7 @@ def auth_google_callback():
     code = request.args.get('code', '')
     error = request.args.get('error', '')
     if error:
-        flash('Error: '+error, 'warning')
+        flash('Error: ' + error, 'warning')
         return redirect(url_for('dashboard'))
     try:
         credentials = get_google_auth_flow().step2_exchange(code)
@@ -226,7 +227,7 @@ def auth_google_callback():
             flash('Credential Invalid.', 'warning')
             return redirect(url_for('dashboard'))
     except Exception as e:
-        flash('Error: '+str(e), 'warning')
+        flash('Error: ' + str(e), 'warning')
         return redirect(url_for('dashboard'))
     user.acquire_lock()
     if user.target != 'google':

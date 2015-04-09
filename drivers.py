@@ -5,6 +5,7 @@ from oauth2client import client
 import apiclient
 from api import ivle
 from utils.misc import get_mime_type
+from config import GLOBAL_MAX_FILE_SIZE
 
 
 class SyncException(Exception):
@@ -21,6 +22,8 @@ class SyncException(Exception):
 
 
 class BaseDriver():
+    MAX_FILE_SIZE = GLOBAL_MAX_FILE_SIZE
+
     # Drivers should do error handling here. Throw an Exception to trigger an email being sent to the user.
     # Should NEVER return False, raise an exception if something is wrong!
     @classmethod

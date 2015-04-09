@@ -48,7 +48,7 @@ def parse_folder(user, folder, father_directory):
             for single_file in folder['Files']:
                 if not (utils.misc.is_ignored_file(single_file['FileName'])):
                     file_list.append({'path': father_directory + folder['FolderName'].strip(' .') + '/' + single_file['FileName'],
-                                      'ID': single_file['ID'], 'size': 0})  # TODO: SIZE!
+                                      'ID': single_file['ID'], 'size': single_file['FileSize']})  # TODO: SIZE!
         if len(folder['Folders']) > 0:
             for single_folder in folder['Folders']:
                 file_list.extend(parse_folder(user, single_folder, father_directory + folder['FolderName'].strip(' .') + '/'))

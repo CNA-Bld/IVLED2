@@ -68,10 +68,11 @@ def do_user(user_name):
 
     for file in file_list:
         if file['ID'] not in user.synced_files and not file_queue.fetch_job('%s:%s' % (user_name, file['ID'])):
-            file_queue.enqueue_call(func=do_file, args=(user_name, file['ID'], file['path']), job_id='%s:%s' % (user_name, file['ID']), timeout=-1)
+            file_queue.enqueue_call(func=do_file, args=(user_name, file['ID'], file['path'], file['size']), job_id='%s:%s' % (user_name, file['ID']),
+                                    timeout=-1)
 
 
-def do_file(user_name, file_id, file_path):
+def do_file(user_name, file_id, file_path, file_size):
     user = models.User(user_name)
     url = api.ivle.get_file_url(user, file_id)
     if file_id in user.synced_files:
@@ -81,6 +82,10 @@ def do_file(user_name, file_id, file_path):
         try:
             if not (user.enabled and drivers[user.target].check_settings(user.target_settings)):
                 return  # TODO
+            if file_size > GLOBAL_MAX_FILE_SIZE or file_size > drivers[user.target].MAX_FILE_SIZE:
+                raise SyncException(
+                    'File %s is too big to be automatically transferred. Please manually download it <a href="%s">here</a>. Sorry for the inconvenience!' % (
+                        file_path, url), retry=False, send_email=True, disable_user=False, logout_user=False)
             drivers[user.target].transport_file(user.target_settings, url, file_path)
             user.synced_files.append(file_id)
             user.update()

@@ -126,6 +126,8 @@ class GoogleDriver(BaseDriver):
         except client.AccessTokenRefreshError as e:
             raise SyncException("You are not logged in to Google Drive or your token is expired. Please re-login on the webpage.", retry=True, send_email=True,
                                 disable_user=True, logout_user=True)
+        except apiclient.errors.ResumableUploadError as e:
+            raise SyncException("ResumableUploadError, will retry.", retry=True, send_email=False, disable_user=False, logout_user=False)
         except apiclient.errors.HttpError as e:
             raise SyncException(str(e), retry=True, send_email=False, disable_user=False, logout_user=False)
         except Exception as e:

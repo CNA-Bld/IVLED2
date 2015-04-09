@@ -76,38 +76,44 @@ def do_file(user_name, file_id, file_path, file_size):
     user = models.User(user_name)
     url = api.ivle.get_file_url(user, file_id)
     if file_id in user.synced_files:
-        return  # TODO
-    with user.lock:
-        user.sync_from_db()
-        try:
-            if not (user.enabled and drivers[user.target].check_settings(user.target_settings)):
-                return  # TODO
-            if file_size > GLOBAL_MAX_FILE_SIZE or file_size > drivers[user.target].MAX_FILE_SIZE:
-                raise SyncException(
-                    'File %s is too big to be automatically transferred. Please manually download it <a href="%s">here</a>. Sorry for the inconvenience!' % (
-                        file_path, url), retry=False, send_email=True, disable_user=False, logout_user=False)
-            drivers[user.target].transport_file(user.target_settings, url, file_path)
+        return
+    try:
+        if not (user.enabled and drivers[user.target].check_settings(user.target_settings)):
+            return
+        if file_size > GLOBAL_MAX_FILE_SIZE or file_size > drivers[user.target].MAX_FILE_SIZE:
+            raise SyncException(
+                'File %s is too big to be automatically transferred. Please manually download it <a href="%s">here</a>. Sorry for the inconvenience!' % (
+                    file_path, url), retry=False, send_email=True, disable_user=False, logout_user=False)
+        drivers[user.target].transport_file(user.target_settings, url, file_path)
+        with user.lock:
+            user.sync_from_db()
             user.synced_files.append(file_id)
             user.update()
-        except SyncException as e:
-            if not e.retry:
+    except SyncException as e:
+        if not e.retry:
+            with user.lock:
+                user.sync_from_db()
                 user.synced_files.append(file_id)
                 user.update()
-            if e.send_email:
-                mail.send_error_to_user(user.email, e.message, traceback.format_exc(), locals())
-            else:
-                mail.send_error_to_admin(traceback.format_exc(), locals())
-            if e.disable_user:
+        if e.send_email:
+            mail.send_error_to_user(user.email, e.message, traceback.format_exc(), locals())
+        else:
+            mail.send_error_to_admin(traceback.format_exc(), locals())
+        if e.disable_user:
+            with user.lock:
+                user.sync_from_db()
                 user.enabled = False
                 user.update()
-            if e.logout_user:
+        if e.logout_user:
+            with user.lock:
+                user.sync_from_db()
                 user.last_target = user.target
                 user.target = None
                 user.update()
-            return
-        except api.ivle.IVLEUnknownErrorException as e:
-            mail.send_error_to_admin(traceback.format_exc(), locals())
-            return  # TODO: Walao eh IVLE bug again, skip it and inform the admin
-        except Exception as e:
-            mail.send_error_to_admin(traceback.format_exc(), locals())
-            return  # TODO: inform admin
+        return
+    except api.ivle.IVLEUnknownErrorException as e:
+        mail.send_error_to_admin(traceback.format_exc(), locals())
+        return  # TODO: Walao eh IVLE bug again, skip it and inform the admin
+    except Exception as e:
+        mail.send_error_to_admin(traceback.format_exc(), locals())
+        return

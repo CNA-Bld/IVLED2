@@ -56,6 +56,7 @@ def do_user(user_name):
                 user.sync_from_db()
                 user.enabled = False
                 user.update()
+            return
     except Exception as e:
         mail.send_error_to_admin(traceback.format_exc(), locals())  # TODO
         return
@@ -84,6 +85,13 @@ def do_file(user_name, file_id, file_path, file_size):
             raise SyncException(
                 'File %s is too big to be automatically transferred. Please manually download it <a href="%s">here</a>. Sorry for the inconvenience!' % (
                     file_path, url), retry=False, send_email=True, disable_user=False, logout_user=False)
+        if not api.ivle.validate_token(user):
+            mail.send_email(user.email, 'IVLE Login Expired.', "Your IVLE login has expired. Please refresh by accessing our page and re-enable syncing.")
+            with user.lock:
+                user.sync_from_db()
+                user.enabled = False
+                user.update()
+            return
         drivers[user.target].transport_file(user.target_settings, url, file_path)
         with user.lock:
             user.sync_from_db()

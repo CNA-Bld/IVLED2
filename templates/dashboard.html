@@ -167,6 +167,9 @@
             });
 
             var gdriveCallback = function () {
+                $.bootstrapGrowl("Communicating with Google...", {
+                    type: 'info'
+                });
                 $.getJSON("{{ url_for('google_get_folder') }}", function (data, status) {
                     if (data.result) {
                         $.bootstrapGrowl("Your folder is now set to ".concat(data.path), {

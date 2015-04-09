@@ -24,30 +24,26 @@ class User():
             self.update()
 
     def update_ivle_token(self, new_token):
-        self.acquire_lock()
-        self.ivle_token = new_token
-        self.update()
-        self.release_lock()
+        with self.lock:
+            self.sync_from_db()
+            self.ivle_token = new_token
+            self.update()
 
     def unauth_target(self, clear_synced_files=True):
-        self.acquire_lock()
-        self.last_target = self.target
-        self.target = None
-        if clear_synced_files:
-            self.synced_files = []
-        self.enabled = False
-        self.update()
-        self.release_lock()
+        with self.lock:
+            self.sync_from_db()
+            self.last_target = self.target
+            self.target = None
+            if clear_synced_files:
+                self.synced_files = []
+            self.enabled = False
+            self.update()
 
     def to_dict(self):
         return self.__dict__
 
-    def acquire_lock(self):
-        self.lock.acquire(True)
+    def sync_from_db(self):
         self.__dict__.update(db.get_user_dict(self.user_id))
-
-    def release_lock(self):
-        self.lock.release()
 
     def update(self):
         db.update_user(self)

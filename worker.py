@@ -28,36 +28,34 @@ def queue_all_user():
 
 def do_user(user_name):
     user = models.User(user_name)
-    try:
-        user.acquire_lock()
-        if not (user.enabled and drivers[user.target].check_settings(user.target_settings)):
-            return  # Drivers should always return True or throw Exception. This means user disabled somewhere, we skip the user.
-    except SyncException as e:
-        if e.disable_user:
-            user.enabled = False
-            user.update()
-        if e.logout_user:
-            user.last_target = user.target
-            user.target = None
-            user.update()
-        if e.send_email:
-            mail.send_error_to_user(user.email, e.message, traceback.format_exc(), locals())
-        else:
-            mail.send_error_to_admin(traceback.format_exc(), locals())
-        return
-    except Exception as e:
-        mail.send_error_to_admin(traceback.format_exc(), locals())  # TODO
-        return
-    finally:
-        user.release_lock()
-
+    with user.lock:
+        user.sync_from_db()
+        try:
+            if not (user.enabled and drivers[user.target].check_settings(user.target_settings)):
+                return  # Drivers should always return True or throw Exception. This means user disabled somewhere, we skip the user.
+        except SyncException as e:
+            if e.disable_user:
+                user.enabled = False
+                user.update()
+            if e.logout_user:
+                user.last_target = user.target
+                user.target = None
+                user.update()
+            if e.send_email:
+                mail.send_error_to_user(user.email, e.message, traceback.format_exc(), locals())
+            else:
+                mail.send_error_to_admin(traceback.format_exc(), locals())
+            return
+        except Exception as e:
+            mail.send_error_to_admin(traceback.format_exc(), locals())  # TODO
+            return
     try:
         if not api.ivle.validate_token(user):
             mail.send_email(user.email, 'IVLE Login Expired.', "Your IVLE login has expired. Please refresh by accessing our page and re-enable syncing.")
-            user.acquire_lock()
-            user.enabled = False
-            user.update()
-            user.release_lock()
+            with user.lock:
+                user.sync_from_db()
+                user.enabled = False
+                user.update()
     except Exception as e:
         mail.send_error_to_admin(traceback.format_exc(), locals())  # TODO
         return
@@ -78,34 +76,33 @@ def do_file(user_name, file_id, file_path):
     url = api.ivle.get_file_url(user, file_id)
     if file_id in user.synced_files:
         return  # TODO
-    try:
-        user.acquire_lock()
-        if not (user.enabled and drivers[user.target].check_settings(user.target_settings)):
-            return  # TODO
-        drivers[user.target].transport_file(user.target_settings, url, file_path)
-        user.synced_files.append(file_id)
-        user.update()
-    except SyncException as e:
-        if not e.retry:
+    with user.lock:
+        user.sync_from_db()
+        try:
+            if not (user.enabled and drivers[user.target].check_settings(user.target_settings)):
+                return  # TODO
+            drivers[user.target].transport_file(user.target_settings, url, file_path)
             user.synced_files.append(file_id)
             user.update()
-        if e.send_email:
-            mail.send_error_to_user(user.email, e.message, traceback.format_exc(), locals())
-        else:
+        except SyncException as e:
+            if not e.retry:
+                user.synced_files.append(file_id)
+                user.update()
+            if e.send_email:
+                mail.send_error_to_user(user.email, e.message, traceback.format_exc(), locals())
+            else:
+                mail.send_error_to_admin(traceback.format_exc(), locals())
+            if e.disable_user:
+                user.enabled = False
+                user.update()
+            if e.logout_user:
+                user.last_target = user.target
+                user.target = None
+                user.update()
+            return
+        except api.ivle.IVLEUnknownErrorException as e:
             mail.send_error_to_admin(traceback.format_exc(), locals())
-        if e.disable_user:
-            user.enabled = False
-            user.update()
-        if e.logout_user:
-            user.last_target = user.target
-            user.target = None
-            user.update()
-        return
-    except api.ivle.IVLEUnknownErrorException as e:
-        mail.send_error_to_admin(traceback.format_exc(), locals())
-        return  # TODO: Walao eh IVLE bug again, skip it and inform the admin
-    except Exception as e:
-        mail.send_error_to_admin(traceback.format_exc(), locals())
-        return  # TODO: inform admin
-    finally:
-        user.release_lock()
+            return  # TODO: Walao eh IVLE bug again, skip it and inform the admin
+        except Exception as e:
+            mail.send_error_to_admin(traceback.format_exc(), locals())
+            return  # TODO: inform admin

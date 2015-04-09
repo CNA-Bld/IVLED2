@@ -49,10 +49,10 @@ def modules_submit():
     for course in request.form:
         course_code, course_id = str(course).split('|')
         courses.append({'Code': course_code, 'ID': course_id})
-    user.acquire_lock()
-    user.modules = courses
-    user.update()
-    user.release_lock()
+    with user.lock:
+        user.sync_from_db()
+        user.modules = courses
+        user.update()
     return ""
 
 
@@ -70,28 +70,25 @@ def settings_submit():
     if 'user_id' not in session or session['user_id'] == '':
         return redirect(url_for('login'))
     user = models.User(session['user_id'])
-    try:
-        if drivers.drivers[user.target].check_settings(user.target_settings):
-            user.acquire_lock()
+    with user.lock:
+        user.sync_from_db()
+        try:
             user.enabled = bool(request.form.get('sync_enabled', ''))
+            if (not user.enabled) or (drivers.drivers[user.target].check_settings(user.target_settings)):
+                user.uploadable_folder = bool(request.form.get('uploadable_folder', ''))
+                user.email = request.form.get('email', user.email)
+                user.update()
+                return json.dumps({'result': True})
+            else:  # TODO: Should never reach
+                user.enabled = False
+                user.update()
+                return json.dumps({'result': False, 'message': 'An unknown error happened. Please refresh the page and try again.'})
+        except drivers.SyncException as e:
+            user.enabled = False
             user.uploadable_folder = bool(request.form.get('uploadable_folder', ''))
             user.email = request.form.get('email', user.email)
             user.update()
-            user.release_lock()
-            return json.dumps({'result': True})
-        else:  # TODO: Should never reach
-            user.acquire_lock()
-            user.enabled = False
-            user.update()
-            user.release_lock()
-            return json.dumps({'result': False, 'message': 'An unknown error happened. Please refresh the page and try again.'})
-    except drivers.SyncException as e:
-        user.acquire_lock()
-        user.enabled = False
-        user.email = request.form.get('email', user.email)
-        user.update()
-        user.release_lock()
-        return json.dumps({'result': False, 'message': e.message})
+            return json.dumps({'result': False, 'message': e.message})
 
 
 # Target: Dropbox
@@ -131,17 +128,17 @@ def auth_dropbox_callback():
     except dropbox.client.DropboxOAuth2Flow.ProviderException as e:
         app.logger.exception("Auth error" + str(e))
         abort(403)
-    user.acquire_lock()
-    user.target = 'dropbox'
-    if user.last_target != 'dropbox':
-        user.target_settings = {'token': access_token, 'folder': '', 'files_revision': {}}
-        flash('Successfully logged in to Dropbox as %s' % dropbox.client.DropboxClient(user.target_settings['token']).account_info()['display_name'], 'info')
-    else:
-        user.target_settings['token'] = access_token
-        flash('Successfully refreshed token for Dropbox user %s' % dropbox.client.DropboxClient(user.target_settings['token']).account_info()['display_name'],
-              'info')
-    user.update()
-    user.release_lock()
+    with user.lock:
+        user.sync_from_db()
+        user.target = 'dropbox'
+        if user.last_target != 'dropbox':
+            user.target_settings = {'token': access_token, 'folder': '', 'files_revision': {}}
+            flash('Successfully logged in to Dropbox as %s' % dropbox.client.DropboxClient(user.target_settings['token']).account_info()['display_name'], 'info')
+        else:
+            user.target_settings['token'] = access_token
+            flash('Successfully refreshed token for Dropbox user %s' % dropbox.client.DropboxClient(user.target_settings['token']).account_info()['display_name'],
+                  'info')
+        user.update()
     return redirect(url_for('dashboard'))
 
 
@@ -181,11 +178,11 @@ def dropbox_update_folder():
     dropbox_client = dropbox.client.DropboxClient(user.target_settings['token'])
     file_list = dropbox_client.search('/', '.Your_Workbin_Files')
     if file_list:
-        user.acquire_lock()
-        new_path = file_list[0]['path']
-        user.target_settings['folder'] = new_path[:new_path.rfind('/') + 1]
-        user.update()
-        user.release_lock()
+        with user.lock:
+            user.sync_from_db()
+            new_path = file_list[0]['path']
+            user.target_settings['folder'] = new_path[:new_path.rfind('/') + 1]
+            user.update()
         dropbox_client.file_delete(new_path)
         return user.target_settings['folder']
     else:
@@ -229,16 +226,16 @@ def auth_google_callback():
     except Exception as e:
         flash('Error: ' + str(e), 'warning')
         return redirect(url_for('dashboard'))
-    user.acquire_lock()
-    user.target = 'google'
-    if user.last_target != 'google':
-        flash('Logged in to Google Drive.', 'info')
-        user.target_settings = {'credentials': credentials.to_json(), 'parent_id': ''}
-    else:
-        flash('Refreshed Google Drive token.', 'info')
-        user.target_settings['credentials'] = credentials.to_json()
-    user.update()
-    user.release_lock()
+    with user.lock:
+        user.sync_from_db()
+        user.target = 'google'
+        if user.last_target != 'google':
+            flash('Logged in to Google Drive.', 'info')
+            user.target_settings = {'credentials': credentials.to_json(), 'parent_id': ''}
+        else:
+            flash('Refreshed Google Drive token.', 'info')
+            user.target_settings['credentials'] = credentials.to_json()
+        user.update()
     return redirect(url_for('dashboard'))
 
 
@@ -288,10 +285,10 @@ def google_update_folder():
     params = {'q': "title = '.Your_Workbin_Files'"}
     files = apiclient.files().list(**params).execute()
     if len(files['items']) > 0:
-        user.acquire_lock()
-        user.target_settings['parent_id'] = files['items'][0]['parents'][0]['id']
-        user.update()
-        user.release_lock()
+        with user.lock:
+            user.sync_from_db()
+            user.target_settings['parent_id'] = files['items'][0]['parents'][0]['id']
+            user.update()
         apiclient.files().delete(fileId=files['items'][0]['id']).execute()
     else:
         pass  # TODO

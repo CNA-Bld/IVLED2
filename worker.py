@@ -14,7 +14,7 @@ file_queue = rq.Queue('file', connection=db.r)
 
 
 def queue_metajob():
-    user_queue.enqueue_call(func=queue_all_user, job_id='METAJOB')
+    user_queue.enqueue_call(func=queue_all_user, job_id='METAJOB', timeout=-1)
 
 
 def queue_all_user():
@@ -68,7 +68,7 @@ def do_user(user_name):
 
     for file in file_list:
         if file['ID'] not in user.synced_files and not file_queue.fetch_job('%s:%s' % (user_name, file['ID'])):
-            file_queue.enqueue_call(func=do_file, args=(user_name, file['ID'], file['path']), job_id='%s:%s' % (user_name, file['ID']))
+            file_queue.enqueue_call(func=do_file, args=(user_name, file['ID'], file['path']), job_id='%s:%s' % (user_name, file['ID']), timeout=-1)
 
 
 def do_file(user_name, file_id, file_path):

@@ -14,9 +14,9 @@
     {% if target == 'dropbox' %}
         <script type="text/javascript" src="https://www.dropbox.com/static/api/2/dropins.js" id="dropboxjs" data-app-key="uu5mhej80smc1vp"></script>
     {% elif target == 'google' %}
-        <script src="https://apis.google.com/js/platform.js" async defer>{
-            parsetags: 'explicit'
-        }</script>
+        <script src="https://apis.google.com/js/platform.js" async defer>{parsetags: 'explicit'}</script>
+    {% elif target == 'onedrive' %}
+        <!--<script type="text/javascript" src="https://js.live.net/v5.0/OneDrive.js" id="onedrive-js" client-id="0000000048151850"></script>-->
     {% endif %}
 
     <script>
@@ -161,7 +161,7 @@
                                 $("#googleFolderForm").submit();
                                 dialogItself.close();
                             }
-                        },
+                        }
                     ]
                 });
             });
@@ -192,6 +192,8 @@
                         $('#textFolder').val(data.info);
                 });
             });
+        {% elif target == 'onedrive' %}
+
         {% endif %}
 
     </script>
@@ -269,10 +271,10 @@
                 <div class="input-group">
                     <span class="input-group-btn">
                         <span class="btn btn-social-icon btn-microsoft"><i class="fa fa-windows"></i></span>
-                        <button class="btn btn-default" type="button" id="modifyFolder">Set Folder</button>
+                        <button class="btn btn-default" type="button" id="modifyFolder" disabled>Set Folder</button>
                     </span>
                     <input type="text" class="form-control" id="textFolder"
-                           value="{{ target_settings.folder or 'Unknown / Not Set' }}" disabled>
+                           value="[We do not currently support customize folder for OneDrive]" disabled>
                     <span class="input-group-btn">
                         <button class="btn btn-danger" type="button" id="logoutButton">Logout</button>
                     </span>

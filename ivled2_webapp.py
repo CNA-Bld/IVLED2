@@ -353,7 +353,7 @@ def auth_onedrive_callback():
         user.target = 'onedrive'
         if user.last_target != 'onedrive':
             flash('Logged in to OneDrive.', 'info')
-            user.target_settings = {'credentials': credentials.to_json(), 'path': ''}
+            user.target_settings = {'credentials': credentials.to_json(), 'folder': ''}
         else:
             flash('Refreshed OneDrive token.', 'info')
             user.target_settings['credentials'] = credentials.to_json()

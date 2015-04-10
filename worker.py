@@ -92,11 +92,13 @@ def do_file(user_name, file_id, file_path, file_size):
                 user.enabled = False
                 user.update()
             return
-        drivers[user.target].transport_file(user.target_settings, url, file_path)
-        with user.lock:
-            user.sync_from_db()
-            user.synced_files.append(file_id)
-            user.update()
+        if drivers[user.target].transport_file(user, url, file_path):
+            with user.lock:
+                user.sync_from_db()
+                user.synced_files.append(file_id)
+                user.update()
+        else:
+            raise SyncException("transport_file returned False", retry=True, send_email=False, disable_user=False, logout_user=False)
     except SyncException as e:
         if not e.retry:
             with user.lock:

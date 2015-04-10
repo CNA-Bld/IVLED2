@@ -34,8 +34,9 @@ class BaseDriver():
     # Throw an Exception to trigger an email being sent to the user.
     # But except IVLEUnknownErrorException, which will be handled differently.
     # Should NEVER return False, raise an exception if something is wrong!
+    # Updated 10/04: Due to changes of lock in worker.py, drivers need to take care of locking / updating themselves.
     @classmethod
-    def transport_file(cls, user_settings, file_url, target_path):
+    def transport_file(cls, user, file_url, target_path):
         return True
 
 
@@ -45,7 +46,7 @@ class NullDriver(BaseDriver):
         raise SyncException("You have not selected a target service.", retry=True, send_email=True, disable_user=True, logout_user=False)
 
     @classmethod
-    def transport_file(cls, user_settings, file_url, target_path):
+    def transport_file(cls, user, file_url, target_path):
         raise SyncException("You have not selected a target service.", retry=True, send_email=True, disable_user=True, logout_user=False)
 
 
@@ -68,14 +69,18 @@ class DropboxDriver(BaseDriver):
             raise e
 
     @classmethod
-    def transport_file(cls, user_settings, file_url, target_path):
-        if not cls.check_settings(user_settings):
+    def transport_file(cls, user, file_url, target_path):
+        if not cls.check_settings(user.target_settings):
             return  # Should never reach
         try:
-            dropbox_client = dropbox.client.DropboxClient(user_settings['token'])
-            file_data = dropbox_client.put_file(user_settings['folder'] + target_path, ivle.get_file(file_url),
-                                                parent_rev=user_settings['files_revision'].get(target_path, ''))
-            user_settings['files_revision'][target_path] = file_data['revision']
+            dropbox_client = dropbox.client.DropboxClient(user.target_settings['token'])
+            file_data = dropbox_client.put_file(user.target_settings['folder'] + target_path, ivle.get_file(file_url),
+                                                parent_rev=user.target_settings['files_revision'].get(target_path, ''))
+
+            with user.lock:
+                user.sync_from_db()
+                user.target_settings['files_revision'][target_path] = file_data['revision']
+                user.update()
             return True
         except dropbox.rest.ErrorResponse as e:
             if e.status == 401:
@@ -113,12 +118,12 @@ class GoogleDriver(BaseDriver):
                                 retry=True, send_email=True, disable_user=True, logout_user=False)
 
     @classmethod
-    def transport_file(cls, user_settings, file_url, target_path):
-        if not cls.check_settings(user_settings):
+    def transport_file(cls, user, file_url, target_path):
+        if not cls.check_settings(user.target_settings):
             return  # Should never reach
         try:
-            service = cls.get_drive_client(user_settings)
-            path_id = cls.find_path(service, user_settings['parent_id'], target_path.split('/')[1:-1])
+            service = cls.get_drive_client(user.target_settings)
+            path_id = cls.find_path(service, user.target_settings['parent_id'], target_path.split('/')[1:-1])
             media_body = apiclient.http.MediaIoBaseUpload(BytesIO(ivle.get_file(file_url)), mimetype=get_mime_type(target_path), resumable=True)
             body = {'title': target_path[target_path.rfind('/') + 1:], 'parents': [{'id': path_id}]}
             file = service.files().insert(body=body, media_body=media_body).execute()

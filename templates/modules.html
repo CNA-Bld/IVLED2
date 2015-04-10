@@ -1,13 +1,13 @@
 <form role="form" method="POST" action="{{ url_for('modules_submit') }}" id="moduleForm">
-    <div>
-        {% for module in modules %}
+    {% for module in modules %}
+        <div>
             <label>
                 <input type="checkbox" class="module-checkbox" name="{{ module.CourseCode }}|{{ module.ID }}"
                        {% if module.CourseCode in selected_modules %}checked="checked"{% endif %} data-size="mini">
                 {{ module.CourseCode }} {{ module.CourseName }}
             </label>
-        {% endfor %}
-    </div>
+        </div>
+    {% endfor %}
     <div class="btn-group btn-group-justified" role="group">
         <div class="btn-group" role="group">
             <button type="button" class="btn btn-default btn-sm" id="enableAll">Enable All</button>

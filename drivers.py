@@ -66,6 +66,8 @@ class DropboxDriver(BaseDriver):
             if e.status == 401:
                 raise SyncException("You are not logged in to Dropbox or your token is expired. Please re-login on the webpage.", retry=True, send_email=True,
                                     disable_user=True, logout_user=True)
+            elif e.status in [400, 429, 500, 503]:
+                raise SyncException(e.error_msg, retry=True, send_email=False, disable_user=False, logout_user=False)
             raise e
 
     @classmethod
@@ -86,9 +88,9 @@ class DropboxDriver(BaseDriver):
             if e.status == 401:
                 raise SyncException("You are not logged in to Dropbox or your token is expired. Please re-login on the webpage.", retry=True, send_email=True,
                                     disable_user=True, logout_user=True)
-            elif e.status == 400:
+            elif e.status in [400, 429, 500, 503]:
                 raise SyncException(e.error_msg, retry=True, send_email=False, disable_user=False, logout_user=False)
-            elif e.status == 503:
+            elif e.status == 507:
                 raise SyncException(
                     "Dropbox says you are over quota. We have temporarily disabled syncing for you. Please manually re-enable after cleaning up some files.",
                     retry=True, send_email=True,

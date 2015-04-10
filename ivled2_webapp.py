@@ -316,7 +316,7 @@ def google_get_folder():
 # Target: OneDrive
 def get_onedrive_auth_flow():
     redirect_uri = url_for('auth_onedrive_callback', _external=True, _scheme='https')
-    return OAuth2WebServerFlow(config.ONEDRIVE_CLIENT_ID, config.ONEDRIVE_CLIENT_SECRET, "wl.signin wl.offline_access onedrive.readwrite",
+    return OAuth2WebServerFlow(config.ONEDRIVE_CLIENT_ID, config.ONEDRIVE_CLIENT_SECRET, "wl.offline_access onedrive.readwrite",
                                redirect_uri=redirect_uri, auth_uri="https://login.live.com/oauth20_authorize.srf",
                                token_uri="https://login.live.com/oauth20_token.srf", revoke_uri="https://login.live.com/oauth20_logout.srf")
 

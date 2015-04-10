@@ -156,10 +156,10 @@ def auth_dropbox_unauth():
 def dropbox_folder():
     user_id = request.args.get('user_id', '')
     if not user_id:
-        return "Unauthorized!", 403  # TODO
+        return "Unauthorized!", 403
     user = models.User(user_id)
     if request.args.get('key', '') != user.key:
-        return "Unauthorized!", 403  # TODO
+        return "Unauthorized!", 403
     dropbox_client = dropbox.client.DropboxClient(user.target_settings['token'])
     try:
         file_list = dropbox_client.search('/', '.Your_Workbin_Files')
@@ -314,9 +314,51 @@ def google_get_folder():
 # End of Google Drive
 
 # Target: OneDrive
+def get_onedrive_auth_flow():
+    redirect_uri = url_for('auth_onedrive_callback', _external=True, _scheme='https')
+    return OAuth2WebServerFlow(config.ONEDRIVE_CLIENT_ID, config.ONEDRIVE_CLIENT_SECRET, "wl.signin wl.offline_access onedrive.readwrite",
+                               redirect_uri=redirect_uri, auth_uri="https://login.live.com/oauth20_authorize.srf",
+                               token_uri="https://login.live.com/oauth20_token.srf", revoke_uri="https://login.live.com/oauth20_logout.srf")
+
+
 @app.route("/auth/onedrive/")
 def auth_onedrive():
-    return ''
+    if 'user_id' not in session or session['user_id'] == '':
+        return redirect(url_for('login'))
+    user = models.User(session['user_id'])
+    redirect_uri = get_onedrive_auth_flow().step1_get_authorize_url()
+    return redirect(redirect_uri)
+
+
+@app.route("/auth/onedrive/callback/")
+def auth_onedrive_callback():
+    if 'user_id' not in session or session['user_id'] == '':
+        return redirect(url_for('login'))
+    user = models.User(session['user_id'])
+    code = request.args.get('code', '')
+    error = request.args.get('error', '')
+    if error:
+        flash('Error: ' + error, 'warning')
+        return redirect(url_for('dashboard'))
+    try:
+        credentials = get_onedrive_auth_flow().step2_exchange(code)
+        if credentials.invalid:
+            flash('Credential Invalid.', 'warning')
+            return redirect(url_for('dashboard'))
+    except Exception as e:
+        flash('Error: ' + str(e), 'warning')
+        return redirect(url_for('dashboard'))
+    with user.lock:
+        user.sync_from_db()
+        user.target = 'onedrive'
+        if user.last_target != 'onedrive':
+            flash('Logged in to OneDrive.', 'info')
+            user.target_settings = {'credentials': credentials.to_json(), 'path': ''}
+        else:
+            flash('Refreshed OneDrive token.', 'info')
+            user.target_settings['credentials'] = credentials.to_json()
+        user.update()
+    return redirect(url_for('dashboard'))
 
 
 # End of OneDrive

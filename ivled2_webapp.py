@@ -131,13 +131,13 @@ def auth_dropbox_callback():
     with user.lock:
         user.sync_from_db()
         user.target = 'dropbox'
+        dropbox_username = dropbox.client.DropboxClient(user.target_settings['token']).account_info()['display_name']
         if user.last_target != 'dropbox':
             user.target_settings = {'token': access_token, 'folder': '', 'files_revision': {}}
-            flash('Successfully logged in to Dropbox as %s' % dropbox.client.DropboxClient(user.target_settings['token']).account_info()['display_name'], 'info')
+            flash('Successfully logged in to Dropbox as %s' % dropbox_username, 'info')
         else:
             user.target_settings['token'] = access_token
-            flash('Successfully refreshed token for Dropbox user %s' % dropbox.client.DropboxClient(user.target_settings['token']).account_info()['display_name'],
-                  'info')
+            flash('Successfully refreshed token for Dropbox user %s' % dropbox_username, 'info')
         user.update()
     return redirect(url_for('dashboard'))
 
@@ -358,6 +358,16 @@ def auth_onedrive_callback():
             flash('Refreshed OneDrive token.', 'info')
             user.target_settings['credentials'] = credentials.to_json()
         user.update()
+    return redirect(url_for('dashboard'))
+
+
+@app.route("/auth/onedrive/logout/")
+def auth_onedrive_unauth():
+    if 'user_id' not in session or session['user_id'] == '':
+        return redirect(url_for('login'))
+    user = models.User(session['user_id'])
+    user.unauth_target(True)
+    flash('Successfully logged out from OneDrive.', 'warning')
     return redirect(url_for('dashboard'))
 
 

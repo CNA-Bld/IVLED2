@@ -1,5 +1,7 @@
 import dropbox
 import httplib2
+import json
+import urllib
 from io import BytesIO
 from oauth2client import client
 import apiclient
@@ -93,8 +95,7 @@ class DropboxDriver(BaseDriver):
             elif e.status == 507:
                 raise SyncException(
                     "Dropbox says you are over quota. We have temporarily disabled syncing for you. Please manually re-enable after cleaning up some files.",
-                    retry=True, send_email=True,
-                    disable_user=True, logout_user=False)
+                    retry=True, send_email=True, disable_user=True, logout_user=False)
             raise e
 
 
@@ -181,5 +182,73 @@ class GoogleDriver(BaseDriver):
         return file['title']
 
 
-drivers = {'dropbox': DropboxDriver, 'google': GoogleDriver, '': NullDriver, None: NullDriver}
+class OneDriveDriver(BaseDriver):
+    @classmethod
+    def check_settings(cls, user_settings):
+        if not user_settings['credentials']:
+            raise SyncException("You are not logged in to Google Drive or your token is expired. Please re-login on the webpage.", retry=True, send_email=True,
+                                disable_user=True, logout_user=True)
+        try:
+            credentials = client.OAuth2Credentials.from_json(user_settings['credentials'])
+            http_auth = credentials.authorize(httplib2.Http())
+            (resp_headers, content) = http_auth.request("https://api.onedrive.com/v1.0/drive/special/approot", method="GET")
+            if resp_headers['status'] in [429, 500, 501, 503]:
+                raise SyncException("HTTP Error: %s" % str(resp_headers), retry=True, send_email=False, disable_user=False, logout_user=False)
+            elif resp_headers['status'] == 400:
+                raise SyncException("400: %s" % str(resp_headers), retry=True, send_email=False, disable_user=False, logout_user=False)
+            elif resp_headers['status'] == 507:
+                raise SyncException(
+                    "OneDrive says you are over quota. We have temporarily disabled syncing for you. Please manually re-enable after cleaning up some files.",
+                    retry=True, send_email=True, disable_user=True, logout_user=False)
+            return bool(json.loads(content.decode('ascii'))['id'])
+        except client.AccessTokenRefreshError as e:
+            raise SyncException("You are not logged in to OneDrive or your token is expired. Please re-login on the webpage.", retry=True, send_email=True,
+                                disable_user=True, logout_user=True)
+        except ConnectionResetError as e:
+            raise SyncException("Connection reset. Ignoring.", retry=True, send_email=False, disable_user=False, logout_user=False)
+        except Exception as e:
+            raise SyncException("Something might go wrong with your OneDrive settings. If you are not able to find the error, please inform the developer.",
+                                retry=True, send_email=True, disable_user=True, logout_user=False)
+
+    @classmethod
+    def transport_file(cls, user, file_url, target_path):
+        if not cls.check_settings(user.target_settings):
+            return  # Should never reach
+        try:
+            credentials = client.OAuth2Credentials.from_json(user.target_settings['credentials'])
+            http_auth = credentials.authorize(httplib2.Http())
+            cls.create_path(http_auth, target_path.split('/')[1:-1])
+            (resp_headers, content) = http_auth.request("https://api.onedrive.com/v1.0/drive/special/approot:%s:/content" % urllib.parse.quote(target_path),
+                                                        method="PUT", body=ivle.get_file(file_url), headers={'content-type': get_mime_type(target_path)})
+            if resp_headers['status'] in [429, 500, 501, 503]:
+                raise SyncException("HTTP Error: %s" % str(resp_headers), retry=True, send_email=False, disable_user=False, logout_user=False)
+            elif resp_headers['status'] == 400:
+                raise SyncException("400: %s" % str(resp_headers), retry=True, send_email=False, disable_user=False, logout_user=False)
+            elif resp_headers['status'] == 507:
+                raise SyncException(
+                    "OneDrive says you are over quota. We have temporarily disabled syncing for you. Please manually re-enable after cleaning up some files.",
+                    retry=True, send_email=True, disable_user=True, logout_user=False)
+            return bool(json.loads(content.decode('ascii'))['id'])
+        except client.AccessTokenRefreshError as e:
+            raise SyncException("You are not logged in to OneDrive or your token is expired. Please re-login on the webpage.", retry=True, send_email=True,
+                                disable_user=True, logout_user=True)
+        except ConnectionResetError as e:
+            raise SyncException("Connection reset. Ignoring.", retry=True, send_email=False, disable_user=False, logout_user=False)
+        except Exception as e:
+            raise SyncException("Something might go wrong with your OneDrive settings. If you are not able to find the error, please inform the developer.",
+                                retry=True, send_email=True, disable_user=True, logout_user=False)
+
+    @classmethod
+    def create_path(cls, http_auth, path):
+        if len(path) == 1:
+            (resp_headers, content) = http_auth.request("https://api.onedrive.com/v1.0/drive/special/approot/children", method="POST",
+                                                        body=json.dumps({"name": path[0], "folder": {}}), headers={'content-type': 'application/json'})
+        else:
+            cls.create_path(http_auth, path[:-1])
+            (resp_headers, content) = http_auth.request("https://api.onedrive.com/v1.0/drive/special/approot:/%s:/children" % '/'.join(path[:-1]),
+                                                        method="POST", body=json.dumps({"name": path[-1], "folder": {}}),
+                                                        headers={'content-type': 'application/json'})
+
+
+drivers = {'dropbox': DropboxDriver, 'google': GoogleDriver, 'onedrive': OneDriveDriver, '': NullDriver, None: NullDriver}
 

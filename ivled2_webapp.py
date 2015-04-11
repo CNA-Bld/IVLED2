@@ -2,6 +2,7 @@ import config
 
 from flask import Flask, render_template, redirect, session, request, url_for, get_flashed_messages, flash, abort
 import json
+from requests.exceptions import ConnectionError
 
 from api import ivle
 import dropbox
@@ -382,7 +383,11 @@ def login():
 @app.route("/login/callback/")
 def login_callback():
     token = request.args.get('token', '')
-    user_dict = ivle.get_user_id_and_email(token)
+    try:
+        user_dict = ivle.get_user_id_and_email(token)
+    except (ConnectionError, ValueError):
+        return 'IVLE is not responding. Please wait for a while and try again.\n' \
+               'If you need access to your account immediately, please inform us at support [at] sshz.org.'
     user = models.User(user_dict['UserID'], user_dict['Email'])
     user.update_ivle_token(token)
     session['user_id'] = user.user_id

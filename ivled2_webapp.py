@@ -2,7 +2,7 @@ import config
 
 from flask import Flask, render_template, redirect, session, request, url_for, get_flashed_messages, flash, abort
 import json
-from requests.exceptions import ConnectionError
+from requests.exceptions import ConnectionError, Timeout
 
 from api import ivle
 import dropbox

@@ -2,12 +2,12 @@ import requests
 import utils.misc
 from titlecase import titlecase
 
-from config import IVLE_APIKEY, SERVER_PATH
+from config import IVLE_APIKEY, IVLE_TIMEOUT
 
 
 def get_user_id_and_email(token):
     request = requests.get(
-        'https://ivle.nus.edu.sg/api/Lapi.svc/Profile_View?APIKey=%s&AuthToken=%s' % (IVLE_APIKEY, token))
+        'https://ivle.nus.edu.sg/api/Lapi.svc/Profile_View?APIKey=%s&AuthToken=%s' % (IVLE_APIKEY, token), timeout=IVLE_TIMEOUT)
     data = request.json()['Results'][0]
     return {x: data[x] for x in ['UserID', 'Email']}
 
@@ -18,7 +18,7 @@ def get_ivle_login_url(callback_url):
 
 def get_modules_list(user):
     request = requests.get('https://ivle.nus.edu.sg/api/Lapi.svc/Modules_Student?APIKey=%s&AuthToken=%s&Duration=0&IncludeAllInfo=false' % (
-        IVLE_APIKEY, user.ivle_token))
+        IVLE_APIKEY, user.ivle_token), timeout=IVLE_TIMEOUT)
     if request.json()['Comments'] == 'Invalid login!':
         raise Exception()  # TODO
     modules_list = []
@@ -31,7 +31,7 @@ def get_modules_list(user):
 
 def validate_token(user):  # Due to IVLE bugs we temporarily dirty hack here
     try:
-        result = requests.get('https://ivle.nus.edu.sg/api/Lapi.svc/Validate?APIKey=%s&Token=%s' % (IVLE_APIKEY, user.ivle_token)).json()
+        result = requests.get('https://ivle.nus.edu.sg/api/Lapi.svc/Validate?APIKey=%s&Token=%s' % (IVLE_APIKEY, user.ivle_token), timeout=IVLE_TIMEOUT).json()
     except:
         return True  # TODO: IVLE API Bug Here
     if result['Success']:
@@ -57,7 +57,7 @@ def parse_folder(user, folder, father_directory):
 
 def read_file_list(user, CourseCode, CourseID):
     data = requests.get('https://ivle.nus.edu.sg/api/Lapi.svc/Workbins?APIKey=%s&AuthToken=%s&CourseID=%s&Duration=0&WorkbinID=&TitleOnly=false' % (
-        IVLE_APIKEY, user.ivle_token, CourseID)).json()
+        IVLE_APIKEY, user.ivle_token, CourseID), timeout=IVLE_TIMEOUT).json()
     file_list = []
     if len(data['Results']) > 1:  # We treat modules with one or more workbins differently because we do not want to merge files in different workbins.
         for workbin in data['Results']:

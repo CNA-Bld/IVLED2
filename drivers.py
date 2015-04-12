@@ -228,6 +228,14 @@ class OneDriveDriver(BaseDriver):
                 raise SyncException(
                     "OneDrive says you are over quota. We have temporarily disabled syncing for you. Please manually re-enable after cleaning up some files.",
                     retry=True, send_email=True, disable_user=True, logout_user=False)
+            file_id = json.loads(content.decode('ascii'))['id']
+            (resp_headers, content) = http_auth.request("https://api.onedrive.com/v1.0/drive/items/%s" % file_id, method="PATCH",
+                                                        body=json.dumps({'name': target_path[target_path.rfind('/') + 1:]}),
+                                                        headers={'content-type': 'application/json'})
+            if resp_headers['status'] in [429, 500, 501, 503]:
+                raise SyncException("HTTP Error: %s" % str(resp_headers), retry=True, send_email=False, disable_user=False, logout_user=False)
+            elif resp_headers['status'] == 400:
+                raise SyncException("400: %s" % str(resp_headers), retry=True, send_email=False, disable_user=False, logout_user=False)
             return bool(json.loads(content.decode('ascii'))['id'])
         except client.AccessTokenRefreshError as e:
             raise SyncException("You are not logged in to OneDrive or your token is expired. Please re-login on the webpage.", retry=True, send_email=True,

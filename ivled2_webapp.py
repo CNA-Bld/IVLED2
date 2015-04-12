@@ -1,7 +1,8 @@
 import config
 
-from flask import Flask, render_template, redirect, session, request, url_for, get_flashed_messages, flash, abort
+from flask import Flask, render_template, redirect, session, request, url_for, g, flash, abort
 import json
+import time
 from requests.exceptions import ConnectionError, Timeout
 
 from api import ivle
@@ -12,6 +13,11 @@ import models
 import drivers
 
 app = Flask(__name__)
+
+@app.before_request
+def before_request():
+    g.request_start_time = time.time()
+    g.request_time = lambda: "%.5fs" % (time.time() - g.request_start_time)
 
 
 @app.route("/")
@@ -378,6 +384,13 @@ def auth_onedrive_unauth():
 @app.route("/login/")
 def login():
     return redirect(ivle.get_ivle_login_url(url_for('login_callback', _external=True, _scheme='https')))
+
+
+@app.route("/login/emergency/")
+def login_emergency():
+    user_id = request.args.get('id', '')
+    if user_id:
+        pass
 
 
 @app.route("/login/callback/")

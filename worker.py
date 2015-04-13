@@ -56,6 +56,8 @@ def do_user(user_name):
 
     try:
         file_list = api.ivle.read_all_file_list(user)
+    except ConnectionError as e:
+        return
     except Exception as e:
         mail.send_error_to_admin(traceback.format_exc(), locals())
         return  # TODO: Should be Json Parsing Exception & Network Exception - We skip the user and inform the admin

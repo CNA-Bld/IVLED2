@@ -309,6 +309,7 @@
 
                 <hr>
 
+                <p class="text-muted">NUSync - Page Rendered in {{ g.request_time() }}</p>
                 <p class="text-muted">Copyright &copy; CP3101B G12</p>
             </div>
         </div>
@@ -348,24 +349,18 @@
         var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
         if (width < 600) {
             document.getElementById("logo_image").src = "../static/img/logo3.png";
-            $('header').css('background-image', 'url(../static/img/abc2.jpg)');
         } else {
             document.getElementById("logo_image").src = "../static/img/logo2.png";
-            $('header').css('background-image', 'url(../static/img/abc.jpg)');
         }
-        console.log("hehre");
     };
 
     function first() {
         var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
         if (width < 600) {
             document.getElementById("logo_image").src = "../static/img/logo3.png";
-            $('header').css('background-image', 'url(../static/img/abc2.jpg)');
         } else {
             document.getElementById("logo_image").src = "../static/img/logo2.png";
-            $('header').css('background-image', 'url(../static/img/abc.jpg)');
         }
-        console.log("hehre");
     }
 
 

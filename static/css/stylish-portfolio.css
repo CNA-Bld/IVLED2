@@ -155,7 +155,8 @@ hr.small {
     position: relative;
     width: 100%;
     height: 100%;
-    background: url(../img/abc.jpg) no-repeat center center scroll;
+   
+    background-color: #2e8483;
     -webkit-background-size: cover;
     -moz-background-size: cover;
     background-size: cover;
@@ -246,7 +247,7 @@ hr.small {
 /* Map */
 
 .share {
-    background: url(../img/back5.jpg) repeat;
+    background-color: #fff3fd;
 }
 
 @media(max-width:768px) {

@@ -206,6 +206,8 @@ class OneDriveDriver(BaseDriver):
                                 disable_user=True, logout_user=True)
         except ConnectionResetError as e:
             raise SyncException("Connection reset. Ignoring.", retry=True, send_email=False, disable_user=False, logout_user=False)
+        except KeyError:
+            raise SyncException("Cannot find. Ignoring.", retry=True, send_email=False, disable_user=False, logout_user=False)
         except Exception as e:
             raise SyncException("Something might go wrong with your OneDrive settings. If you are not able to find the error, please inform the developer.",
                                 retry=True, send_email=True, disable_user=True, logout_user=False)
@@ -242,6 +244,8 @@ class OneDriveDriver(BaseDriver):
                                 disable_user=True, logout_user=True)
         except ConnectionResetError as e:
             raise SyncException("Connection reset. Ignoring.", retry=True, send_email=False, disable_user=False, logout_user=False)
+        except KeyError:
+            raise SyncException("Cannot find. Ignoring.", retry=True, send_email=False, disable_user=False, logout_user=False)
         except Exception as e:
             raise SyncException("Something might go wrong with your OneDrive settings. If you are not able to find the error, please inform the developer.",
                                 retry=True, send_email=True, disable_user=True, logout_user=False)

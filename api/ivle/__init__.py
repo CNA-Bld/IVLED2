@@ -90,7 +90,7 @@ class IVLEUnknownErrorException(BaseException):
 
 def get_file(url):
     request = requests.get(url)
-    if request.headers['Content-Type'] == 'text/html' and 'Your actions have caused an error' in request.content:
+    if request.headers['Content-Type'] == 'text/html' and b'Your actions have caused an error' in request.content:
         raise IVLEUnknownErrorException()  # TODO: IVLE Bug
     elif request.status_code == 200:
         return request.content

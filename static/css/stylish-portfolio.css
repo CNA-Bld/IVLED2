@@ -156,12 +156,13 @@ hr.small {
     width: 100%;
     height: 100%;
    
-    background-color: #64c8c7;
+    background: linear-gradient(#0f8786 45%, #0e7978 55%, #7bc5c4 65%); /* Standard syntax */
     -webkit-background-size: cover;
     -moz-background-size: cover;
     background-size: cover;
     -o-background-size: cover;
 }
+
 #logo {
     
     width: 100%;
@@ -179,7 +180,7 @@ hr.small {
 .about {
     padding: 50px 0;
     /*background: url(../img/back1.jpg) repeat;*/
-    background-color: #fbfdfd;
+    background-color: #ffffff;
 }
 
 
@@ -188,7 +189,7 @@ hr.small {
 .services {
     padding: 50px 0;
     /*background: url(../img/back2.jpg) repeat;*/
-    background-color: #dbbfcf;
+    background: linear-gradient(#50c5d8, #5fd1e4, #50c5d8);
     color: white;
 }
 
@@ -237,7 +238,7 @@ hr.small {
 .call-to-action {
     padding: 50px 0;
     /*background: url(../img/back4.jpg) repeat;*/
-    background-color: #d9ffeb;
+    background-color: #9defee;
 }
 
 .call-to-action .btn {
@@ -247,7 +248,7 @@ hr.small {
 /* Map */
 
 .share {
-    background-color: #fff3fd;
+    background-color: #d8fcfc;
 }
 
 @media(max-width:768px) {

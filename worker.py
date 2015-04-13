@@ -1,9 +1,9 @@
 import rq
-
 import traceback
+from requests.exceptions import ConnectionError
+
 import models
-from utils import db
-from utils import mail
+from utils import db, mail
 from config import *
 from drivers import drivers, SyncException
 import api.ivle

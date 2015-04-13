@@ -34,12 +34,17 @@
             text-indent: -1em;
             padding-left: 1em;
         }
+
+        body {
+            padding-top: 70px;
+        }
+
     </style>
 
     {% block additional_css %} {% endblock %}
 </head>
 <body role="document">
-<div class="navbar navbar-default" role="navigation">
+<div class="navbar navbar-default navbar-fixed-top" role="navigation">
     <div class="container">
         <div class="navbar-header">
             <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">

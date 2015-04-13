@@ -156,7 +156,7 @@ hr.small {
     width: 100%;
     height: 100%;
    
-    background-color: #2e8483;
+    background-color: #64c8c7;
     -webkit-background-size: cover;
     -moz-background-size: cover;
     background-size: cover;
@@ -188,8 +188,8 @@ hr.small {
 .services {
     padding: 50px 0;
     /*background: url(../img/back2.jpg) repeat;*/
-    background-color: #15b26d;
-    color: #F0F0F0;
+    background-color: #dbbfcf;
+    color: white;
 }
 
 .service-item {
@@ -237,7 +237,7 @@ hr.small {
 .call-to-action {
     padding: 50px 0;
     /*background: url(../img/back4.jpg) repeat;*/
-    background-color: #d5e9ce;
+    background-color: #d9ffeb;
 }
 
 .call-to-action .btn {

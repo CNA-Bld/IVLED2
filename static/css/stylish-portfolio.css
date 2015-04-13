@@ -156,7 +156,7 @@ hr.small {
     width: 100%;
     height: 100%;
    
-    background: linear-gradient(#0f8786 45%, #0e7978 55%, #7bc5c4 65%); /* Standard syntax */
+    background: linear-gradient(#0f8786 45%, #0e7978 60%, #42bab9 60%, #7bc5c4 70%, #7bc5c4 75%, #97d5d4 90%); /* Standard syntax */
     -webkit-background-size: cover;
     -moz-background-size: cover;
     background-size: cover;

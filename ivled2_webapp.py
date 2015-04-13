@@ -42,7 +42,10 @@ def modules():
     if 'user_id' not in session or session['user_id'] == '':
         return redirect(url_for('login'))
     user = models.User(session['user_id'])
-    mods = ivle.get_modules_list(user)
+    try:
+        mods = ivle.get_modules_list(user)
+    except Exception as e:
+        return "IVLE is not responding. Please try again later."
     selected_modules = [course['Code'] for course in user.modules]
     return render_template('modules.html', modules=mods, selected_modules=selected_modules)
 

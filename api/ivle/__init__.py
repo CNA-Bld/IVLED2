@@ -17,7 +17,7 @@ def get_ivle_login_url(callback_url):
 
 
 def get_modules_list(user):
-    request = requests.get('https://ivle.nus.edu.sg/api/Lapi.svc/Modules_Student?APIKey=%s&AuthToken=%s&Duration=0&IncludeAllInfo=false' % (
+    request = requests.get('https://ivle.nus.edu.sg/api/Lapi.svc/Modules?APIKey=%s&AuthToken=%s&Duration=0&IncludeAllInfo=false' % (
         IVLE_APIKEY, user.ivle_token), timeout=IVLE_TIMEOUT)
     if request.json()['Comments'] == 'Invalid login!':
         raise Exception()  # TODO

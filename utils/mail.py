@@ -1,5 +1,6 @@
 from config import SMTP_SERVER, SMTP_PORT, SMTP_USER, SMTP_PASSWORD, SMTP_FROM, MODULE_VERSION, ADMIN_EMAILS
 
+import logging
 import gzip, zlib
 import base64
 import smtplib
@@ -26,9 +27,12 @@ def get_smtp_client():
 
 
 def send_smtp(to, content):
-    with get_smtp_client() as smtp:
-        smtp.login(SMTP_USER, SMTP_PASSWORD)
-        smtp.sendmail(SMTP_USER, to, content)
+    try:
+        with get_smtp_client() as smtp:
+            smtp.login(SMTP_USER, SMTP_PASSWORD)
+            smtp.sendmail(SMTP_USER, to, content)
+    except smtplib.SMTPResponseException as e:
+        logging.error("SMTP Error: "+str(e))
 
 
 def prepare_email(to, subject, content):

@@ -205,9 +205,9 @@ class OneDriveDriver(BaseDriver):
             raise SyncException("You are not logged in to OneDrive or your token is expired. Please re-login on the webpage.", retry=True, send_email=True,
                                 disable_user=True, logout_user=True)
         except ConnectionResetError as e:
-            raise SyncException("Connection reset. Ignoring.", retry=True, send_email=False, disable_user=False, logout_user=False)
-        except KeyError:
-            raise SyncException("Cannot find. Ignoring.", retry=True, send_email=False, disable_user=False, logout_user=False)
+            raise SyncException("Connection to OneDrive is interrupted. Please try again.", retry=True, send_email=False, disable_user=False, logout_user=False)
+        except KeyError as e:
+            raise SyncException("OneDrive is not behaving as expected. Please try again.", retry=True, send_email=False, disable_user=False, logout_user=False)
         except Exception as e:
             raise SyncException("Something might go wrong with your OneDrive settings. If you are not able to find the error, please inform the developer.",
                                 retry=True, send_email=True, disable_user=True, logout_user=False)

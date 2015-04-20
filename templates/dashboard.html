@@ -83,7 +83,7 @@
             $('#logoutButton').click(function () {
                 BootstrapDialog.confirm({
                     title: 'Confirm Logging Out?',
-                    message: 'Warning!',
+                    message: '<ul><li>You will be logged out from your cloud storage provider.</li><li>Your syncing will be automatically disabled and your syncing history will be reset.</li><li>All files (including the synced ones) will be synced again if you log in again. (They will not overwrite the old ones but creating new copies no matter you made changes or not.)</li></ul>',
                     type: BootstrapDialog.TYPE_DANGER,
                     closable: true,
                     btnOKLabel: 'Confirm Logout',

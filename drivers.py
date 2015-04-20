@@ -193,11 +193,11 @@ class OneDriveDriver(BaseDriver):
             credentials = client.OAuth2Credentials.from_json(user_settings['credentials'])
             http_auth = credentials.authorize(httplib2.Http())
             (resp_headers, content) = http_auth.request("https://api.onedrive.com/v1.0/drive/special/approot", method="GET")
-            if resp_headers['status'] in [429, 500, 501, 503]:
+            if resp_headers['status'] in [str(i) for i in [429, 500, 501, 503]]:
                 raise SyncException("HTTP Error: %s" % str(resp_headers), retry=True, send_email=False, disable_user=False, logout_user=False)
-            elif resp_headers['status'] == 400:
+            elif resp_headers['status'] == '400':
                 raise SyncException("400: %s" % str(resp_headers), retry=True, send_email=False, disable_user=False, logout_user=False)
-            elif resp_headers['status'] == 507:
+            elif resp_headers['status'] == '507':
                 raise SyncException(
                     "OneDrive says you are over quota. We have temporarily disabled syncing for you. Please manually re-enable after cleaning up some files.",
                     retry=True, send_email=True, disable_user=True, logout_user=False)
@@ -224,11 +224,11 @@ class OneDriveDriver(BaseDriver):
             cls.create_path(http_auth, target_path.split('/')[1:-1])
             (resp_headers, content) = http_auth.request("https://api.onedrive.com/v1.0/drive/special/approot:%s:/content" % urllib.parse.quote(target_path),
                                                         method="PUT", body=ivle.get_file(file_url), headers={'content-type': get_mime_type(target_path)})
-            if resp_headers['status'] in [429, 500, 501, 503]:
+            if resp_headers['status'] in [str(i) for i in [429, 500, 501, 503]]:
                 raise SyncException("HTTP Error: %s" % str(resp_headers), retry=True, send_email=False, disable_user=False, logout_user=False)
-            elif resp_headers['status'] == 400:
+            elif resp_headers['status'] == '400':
                 raise SyncException("400: %s" % str(resp_headers), retry=True, send_email=False, disable_user=False, logout_user=False)
-            elif resp_headers['status'] == 507:
+            elif resp_headers['status'] == '507':
                 raise SyncException(
                     "OneDrive says you are over quota. We have temporarily disabled syncing for you. Please manually re-enable after cleaning up some files.",
                     retry=True, send_email=True, disable_user=True, logout_user=False)
@@ -236,9 +236,9 @@ class OneDriveDriver(BaseDriver):
             (resp_headers, content) = http_auth.request("https://api.onedrive.com/v1.0/drive/items/%s" % file_id, method="PATCH",
                                                         body=json.dumps({'name': target_path[target_path.rfind('/') + 1:]}),
                                                         headers={'content-type': 'application/json'})
-            if resp_headers['status'] in [429, 500, 501, 503]:
+            if resp_headers['status'] in [str(i) for i in [429, 500, 501, 503]]:
                 raise SyncException("HTTP Error: %s" % str(resp_headers), retry=True, send_email=False, disable_user=False, logout_user=False)
-            elif resp_headers['status'] == 400:
+            elif resp_headers['status'] == '400':
                 raise SyncException("400: %s" % str(resp_headers), retry=True, send_email=False, disable_user=False, logout_user=False)
             return bool(json.loads(content.decode('ascii'))['id'])
         except client.AccessTokenRefreshError as e:

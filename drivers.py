@@ -264,7 +264,7 @@ class OneDriveDriver(BaseDriver):
                                                         body=json.dumps({"name": path[0], "folder": {}}), headers={'content-type': 'application/json'})
         else:
             cls.create_path(http_auth, path[:-1])
-            (resp_headers, content) = http_auth.request("https://api.onedrive.com/v1.0/drive/special/approot:/%s:/children" % '/'.join(path[:-1]),
+            (resp_headers, content) = http_auth.request("https://api.onedrive.com/v1.0/drive/special/approot:/%s:/children" % urllib.parse.quote('/'.join(path[:-1])),
                                                         method="POST", body=json.dumps({"name": path[-1], "folder": {}}),
                                                         headers={'content-type': 'application/json'})
 

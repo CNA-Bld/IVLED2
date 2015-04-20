@@ -189,6 +189,7 @@ class OneDriveDriver(BaseDriver):
             raise SyncException("You are not logged in to Google Drive or your token is expired. Please re-login on the webpage.", retry=True, send_email=True,
                                 disable_user=True, logout_user=True)
         try:
+            content = ''
             credentials = client.OAuth2Credentials.from_json(user_settings['credentials'])
             http_auth = credentials.authorize(httplib2.Http())
             (resp_headers, content) = http_auth.request("https://api.onedrive.com/v1.0/drive/special/approot", method="GET")
@@ -206,7 +207,7 @@ class OneDriveDriver(BaseDriver):
                                 disable_user=True, logout_user=True)
         except ConnectionResetError as e:
             raise SyncException("Connection to OneDrive is interrupted. Please try again.", retry=True, send_email=False, disable_user=False, logout_user=False)
-        except KeyError as e:
+        except (KeyError, ValueError) as e:
             raise SyncException("OneDrive is not behaving as expected. Please try again.", retry=True, send_email=False, disable_user=False, logout_user=False)
         except Exception as e:
             raise SyncException("Something might go wrong with your OneDrive settings. If you are not able to find the error, please inform the developer.",
@@ -217,6 +218,7 @@ class OneDriveDriver(BaseDriver):
         if not cls.check_settings(user.target_settings):
             return  # Should never reach
         try:
+            content = ''
             credentials = client.OAuth2Credentials.from_json(user.target_settings['credentials'])
             http_auth = credentials.authorize(httplib2.Http())
             cls.create_path(http_auth, target_path.split('/')[1:-1])
@@ -244,8 +246,8 @@ class OneDriveDriver(BaseDriver):
                                 disable_user=True, logout_user=True)
         except ConnectionResetError as e:
             raise SyncException("Connection reset. Ignoring.", retry=True, send_email=False, disable_user=False, logout_user=False)
-        except KeyError:
-            raise SyncException("Cannot find. Ignoring.", retry=True, send_email=False, disable_user=False, logout_user=False)
+        except (KeyError, ValueError) as e:
+            raise SyncException("Cannot find. Ignoring. Info: %s" % content, retry=True, send_email=False, disable_user=False, logout_user=False)
         except Exception as e:
             raise SyncException("Something might go wrong with your OneDrive settings. If you are not able to find the error, please inform the developer.",
                                 retry=True, send_email=True, disable_user=True, logout_user=False)

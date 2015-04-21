@@ -195,7 +195,9 @@
                 });
             });
         {% elif target == 'onedrive' %}
-
+            $(function () {
+                $('[data-toggle="tooltip"]').tooltip();
+            });
         {% endif %}
 
     </script>
@@ -251,10 +253,13 @@
                 <div class="input-group">
                     <span class="input-group-btn">
                         <span class="btn btn-social-icon btn-microsoft"><i class="fa fa-windows"></i></span>
-                        <button class="btn btn-default" type="button" id="modifyFolder" disabled>Set Folder</button>
+                        <button class="btn btn-default" type="button" id="modifyFolder" data-toggle="tooltip" data-placement="bottom"
+                                title="We do not currently support customizing folder for OneDrive" disabled>Set Folder
+                        </button>
                     </span>
                     <input type="text" class="form-control" id="textFolder"
-                           value="[App Folder: NUSync]" disabled>
+                           value="[App Folder: NUSync]" data-toggle="tooltip" data-placement="bottom"
+                           title="We do not currently support customizing folder for OneDrive" disabled>
                     <span class="input-group-btn">
                         <button class="btn btn-danger" type="button" id="logoutButton">Logout</button>
                     </span>

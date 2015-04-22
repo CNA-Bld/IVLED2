@@ -33,7 +33,7 @@ def dashboard():
     selected_modules = ', '.join(sorted([course['Code'] for course in user.modules])) or 'None'
     return render_template('dashboard.html', selected_modules=selected_modules, target=user.target, target_settings=user.target_settings,
                            DROPBOX_APPKEY=config.DROPBOX_APPKEY, user_id=user.user_id, key=user.key, sync_enabled=user.enabled,
-                           uploadable_folder=user.uploadable_folder, email=user.email)
+                           uploadable_folder=user.uploadable_folder, email=user.email, auto_intro=(not user.modules) and (not user.target))
     # return 'Logged in as %s' % session['user_id']
 
 

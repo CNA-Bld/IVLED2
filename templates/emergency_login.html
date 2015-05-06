@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block additional_css %}{% endblock %}
+
+{% block additional_js %}
+    <script>
+        $(function () {
+            $("#btnSubmit").click(function () {
+                $.bootstrapGrowl("Processing...", {type: "info"});
+                $.getJSON("{{ form_address }}", {'user_id': $('#user_id').val()}, function (data) {
+                    $.bootstrapGrowl(data.info, {
+                        type: data.type
+                    });
+                });
+            });
+        });
+    </script>
+{% endblock %}
+
+{% block main_body %}
+
+    <div class="col col-md-6 col-md-offset-3">
+        <div class="panel panel-info">
+            <div class="panel-heading">
+                Login Failed.
+            </div>
+            <div class="panel-body">
+                <p>
+                    It looks like IVLE is not responding to us.
+                </p>
+
+                <p>
+                    If you need immediate access to your account, please fill in your IVLE account ID (matric ID without last alphabet) below and submit. We
+                    will send you an email and you can click the link there to login.
+                </p>
+
+                <div class="input-group">
+                    <input type="text" class="form-control" id="user_id" name="user_id">
+                    <span class="input-group-btn"><button class="btn btn-default" type="button" id="btnSubmit">Submit</button></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

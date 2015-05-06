@@ -1,4 +1,5 @@
 from config import REDIS_HOST, REDIS_PORT, REDIS_DB
+from utils.misc import generate_random_string
 
 import redis
 import pickle
@@ -9,6 +10,8 @@ PREFIX = 'IVLED2:'
 
 PREFIX_USER = PREFIX + 'USER:'
 SET_NAME_USER = PREFIX + 'USERS'
+
+PREFIX_EMERGENCY_LOGIN = PREFIX + 'EMERGENCY:'
 
 
 def set_value(key, value):
@@ -39,3 +42,23 @@ def get_users():
 
 def add_user_to_set(user_id):
     return r.sadd(SET_NAME_USER, user_id)
+
+
+def generate_user_emergency(user_id):
+    authcode = generate_random_string(32)
+    key = PREFIX_EMERGENCY_LOGIN + user_id
+    r.set(key, authcode)
+    r.expire(key, 1800)
+    return authcode
+
+
+def check_user_emergency(user_id, authcode):
+    key = PREFIX_EMERGENCY_LOGIN + user_id
+    if r.get(key):
+        if authcode.encode('ascii') == r.get(key):
+            r.delete(key)
+            return True
+        else:
+            return False
+    else:
+        return False

@@ -14,6 +14,13 @@ Please try to fix the problem at <a href="https://nusync.sshz.org/">https://nusy
 If you believe that this is an error, please include the following information while contacting the developer:
 %s'''
 
+EMERGENCY_LOGIN_FORMAT = '''You have requested an emergency login link.
+
+You can now access your account <a href="https://nusync.sshz.org/login/emergency/check/?user_id=%s&auth_code=%s">here</a>.
+
+If you have not requested it, you may safely delete this email.
+'''
+
 SIGN = '''
 
 This is a system generated email, please do not reply. Please contact support@sshz.org if you have any question.
@@ -32,7 +39,7 @@ def send_smtp(to, content):
             smtp.login(SMTP_USER, SMTP_PASSWORD)
             smtp.sendmail(SMTP_USER, to, content)
     except smtplib.SMTPResponseException as e:
-        logging.error("SMTP Error: "+str(e))
+        logging.error("SMTP Error: " + str(e))
 
 
 def prepare_email(to, subject, content):
@@ -51,6 +58,10 @@ def send_email(to, subject, content):
 
 def send_error_to_user(email, message, tb, lcs):
     return send_email(email, 'An Error Happened.', EXCEPTION_FORMAT % (message, compress_traceback(tb, lcs)))
+
+
+def send_emergency_code_to_user(email, user_id, auth_code):
+    return send_email(email, 'Your Emergency Login Link', EMERGENCY_LOGIN_FORMAT % (user_id, auth_code))
 
 
 def send_error_to_admin(tb, lcs):

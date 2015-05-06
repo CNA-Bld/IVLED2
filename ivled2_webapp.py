@@ -11,8 +11,10 @@ from oauth2client.client import OAuth2WebServerFlow
 
 import models
 import drivers
+from utils import mail
 
 app = Flask(__name__)
+
 
 @app.before_request
 def before_request():
@@ -391,9 +393,35 @@ def login():
 
 @app.route("/login/emergency/")
 def login_emergency():
-    user_id = request.args.get('id', '')
-    if user_id:
-        pass
+    return render_template('emergency_login.html', form_address=url_for('login_emergency_submit'))
+
+
+@app.route("/login/emergency/submit/")
+def login_emergency_submit():
+    user_id = request.args.get('user_id', '')
+    if not models.User.user_exists(user_id):
+        return json.dumps({'info': 'User does not exist!', 'type': 'danger'})
+    else:
+        user = models.User(user_id)
+        auth_code = user.generate_emergency_code()
+        mail.send_emergency_code_to_user(user.email, user_id, auth_code)
+        return json.dumps({'info': 'We have sent an email to your email address ending with @%s.' % user.email.split('@')[-1], 'type': 'info'})
+
+
+@app.route("/login/emergency/check/")
+def login_emergency_check():
+    user_id = request.args.get('user_id', '')
+    auth_code = request.args.get('auth_code', '')
+    if user_id and auth_code and models.User.user_exists(user_id):
+        user = models.User(user_id)
+        if user.check_emergency_code(auth_code):
+            session['user_id'] = user.user_id
+            flash('Successfully logged in (using emergency link) as %s.' % user.user_id, 'info')
+            return redirect(url_for('dashboard'))
+        else:
+            return 'Something went wrong, please try again.'
+    else:
+        abort(403)
 
 
 @app.route("/login/callback/")

@@ -13,7 +13,7 @@ body {
 }
 
 body {
-    font-family: "Source Sans Pro","Helvetica Neue",Helvetica,Arial,sans-serif;
+    font-family: "Source Sans Pro", "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
 
 .text-vertical-center {
@@ -34,27 +34,27 @@ body {
 .btn-dark {
     border-radius: 0;
     color: #fff;
-    background-color: rgba(0,0,0,0.4);
+    background-color: rgba(0, 0, 0, 0.4);
 }
 
 .btn-dark:hover,
 .btn-dark:focus,
 .btn-dark:active {
     color: #fff;
-    background-color: rgba(0,0,0,0.7);
+    background-color: rgba(0, 0, 0, 0.7);
 }
 
 .btn-light {
     border-radius: 0;
     color: #333;
-    background-color: rgb(255,255,255);
+    background-color: rgb(255, 255, 255);
 }
 
 .btn-light:hover,
 .btn-light:focus,
 .btn-light:active {
     color: #333;
-    background-color: rgba(255,255,255,0.8);
+    background-color: rgba(255, 255, 255, 0.8);
 }
 
 /* Custom Horizontal Rule */
@@ -104,7 +104,7 @@ hr.small {
 .sidebar-nav li a:hover {
     text-decoration: none;
     color: #fff;
-    background: rgba(255,255,255,0.2);
+    background: rgba(255, 255, 255, 0.2);
 }
 
 .sidebar-nav li a:active,
@@ -155,7 +155,7 @@ hr.small {
     position: relative;
     width: 100%;
     height: 100%;
-   
+
     background: linear-gradient(#0f8786 45%, #0e7978 60%, #42bab9 60%, #7bc5c4 70%, #7bc5c4 75%, #97d5d4 90%); /* Standard syntax */
     -webkit-background-size: cover;
     -moz-background-size: cover;
@@ -164,7 +164,7 @@ hr.small {
 }
 
 #logo {
-    
+
     width: 100%;
     height: 30%;
     margin-top: 10%;
@@ -182,7 +182,6 @@ hr.small {
     /*background: url(../img/back1.jpg) repeat;*/
     background-color: #ffffff;
 }
-
 
 /* Services */
 
@@ -245,13 +244,20 @@ hr.small {
     margin: 10px;
 }
 
+.privacy {
+    padding: 50px 0;
+
+    background-color: #36c9c4;
+    color: white;
+}
+
 /* Map */
 
 .share {
     background-color: #d8fcfc;
 }
 
-@media(max-width:768px) {
+@media (max-width: 768px) {
     .map {
         height: 75%;
     }

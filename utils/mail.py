@@ -17,6 +17,7 @@ If you believe that this is an error, please include the following information w
 EMERGENCY_LOGIN_FORMAT = '''You have requested an emergency login link.
 
 You can now access your account <a href="https://nusync.sshz.org/login/emergency/check/?user_id=%s&auth_code=%s">here</a>.
+The link can only be used within 30 minutes and can only be used once.
 
 If you have not requested it, you may safely delete this email.
 '''

@@ -430,8 +430,7 @@ def login_callback():
     try:
         user_dict = ivle.get_user_id_and_email(token)
     except (ConnectionError, ValueError, Timeout):
-        return 'IVLE is not responding. Please wait for a while and try again.\n' \
-               'If you need access to your account immediately, please inform us at support [at] sshz.org.'
+        return redirect(url_for('login_emergency'))
     user = models.User(user_dict['UserID'], user_dict['Email'])
     user.update_ivle_token(token)
     session['user_id'] = user.user_id

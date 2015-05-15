@@ -91,7 +91,7 @@ class DropboxDriver(BaseDriver):
                 raise SyncException("You are not logged in to Dropbox or your token is expired. Please re-login on the webpage.", retry=True, send_email=True,
                                     disable_user=True, logout_user=True)
             elif e.status in [400, 429, 500, 503]:
-                if e.status == 400 and "'parent_rev' is not well-formed" in e.error_msg:
+                if e.status == 400 and (("'parent_rev' is not well-formed" in e.error_msg) or ("Invalid parent_rev" in e.error_msg)):
                     with user.lock:
                         user.sync_from_db()
                         user.target_settings['files_revision'][target_path] = ''

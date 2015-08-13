@@ -229,6 +229,7 @@ class OneDriveDriver(BaseDriver):
             credentials = client.OAuth2Credentials.from_json(user.target_settings['credentials'])
             http_auth = credentials.authorize(httplib2.Http())
             target_path = target_path.replace('\t', '_')  # TODO: Temp workaround for OD bug on \t
+            target_path = target_path.replace('\'', '_')  # TODO: Temp workaround for OD bug on '
             cls.create_path(http_auth, target_path.split('/')[1:-1])
             (resp_headers, content) = http_auth.request("https://api.onedrive.com/v1.0/drive/special/approot:%s:/content" % urllib.parse.quote(target_path),
                                                         method="PUT", body=ivle.get_file(file_url), headers={'content-type': get_mime_type(target_path)})

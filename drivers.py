@@ -191,7 +191,7 @@ class OneDriveDriver(BaseDriver):
     @classmethod
     def check_settings(cls, user_settings):
         if not user_settings['credentials']:
-            raise SyncException("You are not logged in to Google Drive or your token is expired. Please re-login on the webpage.", retry=True, send_email=True,
+            raise SyncException("You are not logged in to OneDrive or your token is expired. Please re-login on the webpage.", retry=True, send_email=True,
                                 disable_user=True, logout_user=True)
         try:
             content = ''
